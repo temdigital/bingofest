@@ -1,0 +1,35 @@
+:root{--verde:#216c39;--verde-dark:#184f2b;--laranja:#fba309;--fundo:#fffcf7;--texto:#1e293b;--muted:#64748b;--borda:#e2e8f0;--branco:#fff;--sombra:0 22px 60px rgba(15,23,42,.12)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Roboto,Arial,sans-serif;background:radial-gradient(circle at top left,rgba(249,210,45,.22),transparent 34%),linear-gradient(135deg,#fffcf7,#f8fafc);color:var(--texto)}
+.invite-page{min-height:100vh;width:min(940px,calc(100% - 28px));margin:0 auto;padding:24px 0 42px;display:grid;align-content:start;gap:18px}.invite-logo{width:110px;min-height:80px;display:grid;place-items:center;margin:0 auto;text-decoration:none}.invite-logo img{width:100px;height:auto;object-fit:contain}.invite-card{background:rgba(255,255,255,.96);border:1px solid var(--borda);border-radius:28px;box-shadow:var(--sombra);padding:28px;overflow:hidden}.invite-kicker{display:inline-flex;align-items:center;gap:8px;background:rgba(33,108,57,.1);color:var(--verde);border-radius:999px;padding:8px 14px;font-weight:900;margin-bottom:16px}.invite-card h1{font-size:clamp(1.8rem,6vw,3.2rem);line-height:1.04;margin:0 0 14px;color:#12231a}.invite-card p{color:var(--muted);line-height:1.75;font-size:1.02rem}.invite-form{display:grid;gap:16px;margin-top:22px}.invite-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.invite-group.full{grid-column:1/-1}.invite-group label{display:block;font-weight:900;margin-bottom:8px}.invite-group input,.invite-group select,.invite-group textarea{width:100%;min-height:48px;border:1px solid var(--borda);border-radius:16px;padding:0 14px;font:inherit;color:var(--texto);background:#fff}.invite-group textarea{min-height:150px;padding:14px;resize:vertical}.invite-btn{min-height:50px;border:0;border-radius:999px;background:linear-gradient(135deg,var(--verde),var(--verde-dark));color:#fff;font-weight:900;font:inherit;cursor:pointer;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}.invite-btn:hover{filter:brightness(.96)}.invite-btn.secondary{background:#fff;color:var(--verde);border:1px solid var(--borda)}.invite-options{display:grid;gap:10px}.invite-option{border:1px solid var(--borda);border-radius:16px;background:#fff;min-height:50px;padding:0 16px;text-align:left;font-weight:900;color:var(--texto);cursor:pointer}.invite-option:hover,.invite-option.active{border-color:var(--verde);background:rgba(33,108,57,.08);color:var(--verde)}.term-box{max-height:420px;overflow:auto;border:1px solid var(--borda);border-radius:18px;padding:18px;background:#fffdf8;line-height:1.75}.term-box h2{margin:0 0 12px}.invite-alert{border-radius:18px;padding:16px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;font-weight:800}.invite-success{border-radius:18px;padding:18px;background:#ecfdf5;color:#166534;border:1px solid #bbf7d0;font-weight:900}.invite-preview-img{max-width:180px;max-height:180px;border-radius:18px;border:1px solid var(--borda);object-fit:cover}.invite-loading{text-align:center;padding:54px 20px}.invite-loading i{font-size:2rem;color:var(--verde);margin-bottom:12px}@media(max-width:720px){.invite-card{padding:22px;border-radius:22px}.invite-grid{grid-template-columns:1fr}.invite-page{width:min(100% - 20px,940px);padding-top:14px}.term-box{max-height:360px}.invite-btn{width:100%}}
+
+/* Data de nascimento no aceite — prioridade smartphone */
+.birth-select-grid {
+    display: grid;
+    grid-template-columns: .8fr 1.3fr 1fr;
+    gap: 10px;
+}
+
+.birth-select-grid select,
+.birth-select-grid input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #1e293b;
+    font: inherit;
+    padding: 0 12px;
+    outline: none;
+}
+
+.birth-select-grid select:focus,
+.birth-select-grid input:focus {
+    border-color: #216c39;
+    box-shadow: 0 0 0 4px rgba(33,108,57,.10);
+}
+
+@media (max-width: 420px) {
+    .birth-select-grid {
+        grid-template-columns: 1fr;
+    }
+}

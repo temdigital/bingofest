@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-5FS77TS1WV');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Cadastro - Tem no Entorno Sul</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/WVSr0qr.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #216b39 0%, #f2c585 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo img { height: 60px; width: auto; }
+        h1 { color: #216b39; text-align: center; font-size: 1.8rem; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+        label i { color: #216b39; margin-right: 8px; }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #216b39;
+            box-shadow: 0 0 0 3px rgba(33,107,57,0.1);
+        }
+        .btn-cadastrar {
+            width: 100%;
+            background: #216b39;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn-cadastrar:hover { background: #1a5930; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .btn-cadastrar:disabled { background: #91b69d; cursor: not-allowed; transform: none; }
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+            display: none;
+        }
+        .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .message.error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .message.show { display: block; }
+        .info-text { font-size: 0.85rem; color: #666; text-align: center; margin-top: 20px; }
+        .info-text a { color: #216b39; text-decoration: none; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 576px) {
+            .card { padding: 25px; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="logo">
+                <img src="https://i.imgur.com/WVSr0qr.png" alt="Tem no Entorno Sul">
+            </div>
+            <h1>Criar conta</h1>
+            <p class="subtitle">Cadastre-se e faça parte da nossa comunidade</p>
+
+            <div id="message" class="message"></div>
+
+            <form id="cadastroForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nome completo *</label>
+                    <input type="text" id="nome" placeholder="Seu nome completo" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> E-mail *</label>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-cake-candles"></i> Data de nascimento *</label>
+                    <input type="date" id="dataNascimento" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> WhatsApp</label>
+                    <input type="tel" id="whatsapp" placeholder="(61) 99999-9999">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Senha *</label>
+                    <input type="password" id="senha" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Confirmar senha *</label>
+                    <input type="password" id="confirmarSenha" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user-tag"></i> Tipo de conta *</label>
+                    <select id="tipoUsuario" required>
+                        <option value="">Selecione...</option>
+                        <option value="cliente">👤 Cliente</option>
+                        <option value="comerciante">🏪 Comerciante</option>
+                        <option value="colunista">📝 Colunista</option>
+                        <option value="admin">👑 Administrador</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-cadastrar" id="submitBtn">
+                    <i class="fas fa-user-plus"></i> Cadastrar
+                </button>
+            </form>
+
+            <div class="info-text">
+                Já tem uma conta? <a href="../admin/login.html">Fazer login</a><br>
+                <small>Ao cadastrar, você concorda com nossos <a href="#">Termos de Uso</a>.</small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="cadastro.js"></script>
+</body>
+</html>

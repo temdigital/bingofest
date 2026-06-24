@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Painel Administrativo | Tem no Entorno Sul</title>
+
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="theme-color" content="#216c39">
+
+    <link rel="icon" type="image/png" href="../assets/logo-tem-no-entorno-sul.png">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="dashboard.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<div id="adminApp" class="admin-app">
+
+    <aside class="admin-sidebar" id="adminSidebar">
+
+        <div class="admin-brand">
+            <a href="../index.html">
+                <img
+                    src="../assets/logo-tem-no-entorno-sul.png"
+                    onerror="this.src='https://i.imgur.com/9eZarki.png'"
+                    alt="Tem no Entorno Sul"
+                >
+            </a>
+
+            <span>Painel Administrativo</span>
+        </div>
+
+        <nav class="admin-menu">
+
+            <button
+                type="button"
+                class="admin-menu-item active"
+                data-section="dashboard"
+            >
+                <i class="fas fa-chart-line"></i>
+                Dashboard
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="publicacoes"
+            >
+                <i class="fas fa-newspaper"></i>
+                Publicações
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="eventos"
+            >
+                <i class="fas fa-calendar-days"></i>
+                Eventos
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="negocios"
+            >
+                <i class="fas fa-store"></i>
+                Parceiros
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="colunistas"
+            >
+                <i class="fas fa-user-pen"></i>
+                Colunistas
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="usuarios"
+            >
+                <i class="fas fa-users"></i>
+                Usuários
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="comentarios"
+            >
+                <i class="fas fa-comments"></i>
+                Comunidade
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="convites"
+            >
+                <i class="fas fa-envelope-open-text"></i>
+                Convites
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="publicidade"
+            >
+                <i class="fas fa-rectangle-ad"></i>
+                Publicidade
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="geolocalizacao"
+            >
+                <i class="fas fa-map-location-dot"></i>
+                Geolocalização
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="storage"
+            >
+                <i class="fas fa-cloud-arrow-up"></i>
+                Mídias
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="saude"
+            >
+                <i class="fas fa-heart-pulse"></i>
+                Saúde do sistema
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="analytics"
+            >
+                <i class="fas fa-chart-pie"></i>
+                Analytics
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="logs"
+            >
+                <i class="fas fa-shield-halved"></i>
+                Logs de Segurança
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="remocoes"
+            >
+                <i class="fas fa-user-shield"></i>
+                Solicitações de Remoção
+            </button>
+
+            <button
+                type="button"
+                class="admin-menu-item"
+                data-section="aniversariantes"
+            >
+                <i class="fas fa-cake-candles"></i>
+                Aniversariantes
+            </button>
+
+        </nav>
+
+        <div class="admin-sidebar-footer">
+            <a href="../index.html">
+                <i class="fas fa-house"></i>
+                Ver site
+            </a>
+
+            <button
+                type="button"
+                id="adminSidebarLogoutBtn"
+                class="admin-sidebar-logout-btn"
+            >
+                <i class="fas fa-right-from-bracket"></i>
+                Sair
+            </button>
+        </div>
+
+    </aside>
+
+    <main class="admin-main">
+
+        <header class="admin-topbar">
+
+            <button
+                type="button"
+                class="admin-sidebar-toggle"
+                id="adminSidebarToggle"
+                aria-label="Abrir menu"
+            >
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div>
+                <h1 id="adminPageTitle">Dashboard</h1>
+                <p id="adminPageSubtitle">
+                    Gerencie o portal Tem no Entorno Sul.
+                </p>
+            </div>
+
+            <div class="admin-user-area">
+                <span id="adminUserName">Carregando...</span>
+
+                <button
+                    type="button"
+                    id="adminLogoutBtn"
+                    class="admin-logout-btn"
+                >
+                    <i class="fas fa-right-from-bracket"></i>
+                    Sair
+                </button>
+            </div>
+
+        </header>
+
+        <section id="adminContent" class="admin-content">
+
+            <div class="admin-loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <h2>Carregando painel...</h2>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="../js/supabase-config.js"></script>
+
+<script src="js/admin-ui.js"></script>
+<script src="js/admin-core.js"></script>
+
+<script src="js/admin-editor.js"></script>
+<script src="js/admin-storage.js"></script>
+<script src="js/admin-geolocation.js"></script>
+
+<script src="js/admin-users.js"></script>
+<script src="js/admin-colunistas.js"></script>
+<script src="js/admin-negocios.js"></script>
+<script src="js/admin-publicacoes.js"></script>
+<script src="js/admin-eventos.js"></script>
+<script src="js/admin-comentarios.js"></script>
+<script src="js/admin-convites.js"></script>
+<script src="js/admin-marketing.js"></script>
+<script src="js/admin-health.js"></script>
+<script src="js/admin-analytics.js"></script>
+<script src="js/admin-logs.js"></script>
+<script src="js/admin-remocoes.js"></script>
+<script src="js/admin-aniversariantes.js"></script>
+
+<script src="dashboard.js"></script>
+
+</body>
+</html>

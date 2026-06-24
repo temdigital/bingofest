@@ -1,0 +1,384 @@
+:root {
+    --verde: #216c39;
+    --amarelo: #f9d22d;
+    --laranja: #fba309;
+    --fundo: #fffcf7;
+    --texto: #1e293b;
+    --muted: #64748b;
+    --borda: #e2e8f0;
+    --branco: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fee2e2;
+    --sombra: 0 22px 60px rgba(15, 23, 42, .10);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--fundo);
+}
+
+.container {
+    width: min(1200px, calc(100% - 32px));
+    margin: 0 auto;
+}
+
+/* HERO */
+
+.favorites-hero {
+    padding: 48px 0 30px;
+}
+
+.favorites-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(33, 108, 57, .10);
+    color: var(--verde);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-weight: 900;
+    margin-bottom: 18px;
+}
+
+.favorites-hero h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    line-height: 1.02;
+    color: #12231a;
+    font-weight: 900;
+}
+
+.favorites-hero p {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 1.15rem;
+    max-width: 700px;
+    line-height: 1.7;
+}
+
+/* SECTION */
+
+.favorites-section {
+    padding-bottom: 60px;
+}
+
+/* FILTROS */
+
+.favorites-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.favorite-filter {
+    border: 1px solid var(--borda);
+    background: var(--branco);
+    color: var(--texto);
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 800;
+    transition: .2s;
+}
+
+.favorite-filter:hover {
+    border-color: var(--verde);
+    color: var(--verde);
+}
+
+.favorite-filter.active {
+    background: var(--verde);
+    color: white;
+    border-color: var(--verde);
+}
+
+/* STATS */
+
+.favorites-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.favorites-stat-card {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 22px;
+    padding: 22px;
+    text-align: center;
+    box-shadow: var(--sombra);
+}
+
+.favorites-stat-card strong {
+    display: block;
+    font-size: 2rem;
+    color: var(--verde);
+    font-weight: 900;
+}
+
+.favorites-stat-card span {
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.favorites-stats-loading {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 22px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: var(--sombra);
+}
+
+.favorites-stats-loading i {
+    font-size: 2rem;
+    color: var(--verde);
+}
+
+/* GRID */
+
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.favorite-card {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--sombra);
+    transition: .25s ease;
+}
+
+.favorite-card:hover {
+    transform: translateY(-4px);
+}
+
+.favorite-media {
+    display: block;
+    text-decoration: none;
+}
+
+.favorite-media img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+.favorite-placeholder {
+    height: 220px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(
+        135deg,
+        rgba(33,108,57,.12),
+        rgba(251,163,9,.12)
+    );
+}
+
+.favorite-placeholder i {
+    font-size: 3rem;
+    color: var(--verde);
+}
+
+.favorite-body {
+    padding: 22px;
+}
+
+.favorite-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(33,108,57,.10);
+    color: var(--verde);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: .8rem;
+    font-weight: 900;
+    margin-bottom: 14px;
+}
+
+.favorite-body h2 {
+    margin: 0 0 12px;
+    line-height: 1.25;
+}
+
+.favorite-body h2 a {
+    color: #12231a;
+    text-decoration: none;
+}
+
+.favorite-body h2 a:hover {
+    color: var(--verde);
+}
+
+.favorite-body p {
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+
+.favorite-meta {
+    margin-bottom: 18px;
+}
+
+.favorite-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+.favorite-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.favorite-btn {
+    flex: 1;
+    min-height: 44px;
+    border-radius: 14px;
+    border: 0;
+    background: var(--verde);
+    color: white;
+    text-decoration: none;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.favorite-btn:hover {
+    background: #184f2b;
+}
+
+.favorite-btn.danger {
+    background: var(--danger);
+}
+
+.favorite-btn.danger:hover {
+    background: #b91c1c;
+}
+
+/* LOADING */
+
+.favorites-loading {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 24px;
+    padding: 60px 20px;
+    text-align: center;
+    box-shadow: var(--sombra);
+}
+
+.favorites-loading i {
+    color: var(--verde);
+    font-size: 2.2rem;
+}
+
+.favorites-loading h2 {
+    margin-top: 18px;
+    color: #12231a;
+}
+
+/* EMPTY */
+
+.favorites-empty {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 24px;
+    padding: 60px 24px;
+    text-align: center;
+    box-shadow: var(--sombra);
+}
+
+.favorites-empty i {
+    font-size: 3rem;
+    color: var(--verde);
+}
+
+.favorites-empty h2 {
+    margin: 18px 0 10px;
+    color: #12231a;
+}
+
+.favorites-empty p {
+    color: var(--muted);
+    max-width: 620px;
+    margin: 0 auto 24px;
+    line-height: 1.7;
+}
+
+.favorites-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: 14px;
+    background: var(--verde);
+    color: white;
+    text-decoration: none;
+    font-weight: 900;
+}
+
+.favorites-primary-btn:hover {
+    background: #184f2b;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 1024px) {
+
+    .favorites-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .favorites-stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+
+    .favorites-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .favorites-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .favorite-actions {
+        flex-direction: column;
+    }
+
+    .favorites-filters {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .favorites-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .favorites-hero h1 {
+        font-size: 2.2rem;
+    }
+}
