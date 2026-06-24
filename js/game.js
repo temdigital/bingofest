@@ -1,13 +1,17 @@
 (() => {
   "use strict";
   const BF = window.BingoFest;
-  const { escapeHtml, prizeLabel, renderBingoCard, renderDrawnNumbers, speakNumber, hasWin, navigate, toast, showModal, celebrate } = BF.utils;
+  const {
+    escapeHtml, prizeLabel, renderBingoCard, renderDrawnNumbers, speakNumber,
+    getPrizeCard, getPrizeMarks, navigate, toast, showModal, celebrate
+  } = BF.utils;
+
   let channel = null;
   let round = null;
   let card = null;
   let announcedPrize = null;
   let lastSpokenNumber = null;
-  let claiming = false;
+  let markingNumber = null;
 
   function cleanup() {
     if (channel && BF.supabase) BF.supabase.removeChannel(channel);
@@ -16,7 +20,7 @@
     card = null;
     announcedPrize = null;
     lastSpokenNumber = null;
-    claiming = false;
+    markingNumber = null;
     window.speechSynthesis?.cancel();
   }
 
@@ -24,15 +28,51 @@
     return (round?.prizes || []).find(item => Number(item.prize_number) === Number(round.current_prize));
   }
 
+  function currentNumbers() {
+    return getPrizeCard(card, round.current_prize);
+  }
+
+  function currentMarks() {
+    return getPrizeMarks(card, round.current_prize);
+  }
+
+  function alreadyWonCurrentPrize() {
+    return (card?.won_prizes || []).map(Number).includes(Number(round.current_prize));
+  }
+
+  function bindCardEvents() {
+    document.querySelectorAll("[data-card-number]").forEach(button => {
+      button.addEventListener("click", () => markNumber(Number(button.dataset.cardNumber), button.dataset.drawn === "true"));
+    });
+  }
+
   function renderGame() {
     const app = document.getElementById("app");
     const drawn = round.drawn_numbers || [];
     const latest = drawn.at(-1);
+    const marks = currentMarks();
+    const locked = alreadyWonCurrentPrize();
+
     app.innerHTML = `<section class="screen">
-      <div class="page-heading"><h1>${escapeHtml(round.name)}</h1><p>Sua cartela é privada durante a partida.</p></div>
+      <div class="page-heading">
+        <h1>${escapeHtml(round.name)}</h1>
+        <p>Os números não são marcados automaticamente. Clique na sua cartela quando a bola for sorteada.</p>
+      </div>
       <div class="prize-banner">Sorteio atual<strong>${prizeLabel(round.current_prize)}</strong></div>
+      <div class="manual-play-help">
+        <strong>${locked ? "Prêmio conquistado!" : "Sua vez de jogar"}</strong>
+        <span>${locked ? "Aguarde a próxima cartela." : "Números sorteados ficam destacados. Clique neles para marcar."}</span>
+      </div>
       <div class="game-layout" style="margin-top:18px">
-        <div class="card">${renderBingoCard(card.numbers, drawn, { code: card.card_code })}</div>
+        <div class="card">
+          ${renderBingoCard(currentNumbers(), drawn, {
+            code: `${card.card_code}-P${round.current_prize}`,
+            manual: true,
+            markedNumbers: marks,
+            locked
+          })}
+          <p class="manual-mark-count">Marcados: <strong>${marks.length}</strong> número(s)</p>
+        </div>
         <div class="card draw-panel">
           <h2>Números sorteados</h2>
           ${latest ? `<div class="last-ball" aria-label="Último número sorteado: ${latest}">${latest}</div>` : '<div class="empty-state" style="margin-bottom:16px">Aguardando o primeiro número.</div>'}
@@ -40,23 +80,51 @@
         </div>
       </div>
     </section>`;
+
+    bindCardEvents();
   }
 
-  async function tryClaim() {
-    if (claiming || card.won_prize || currentPrizeEntry()) return;
-    if (!hasWin(card.numbers, round.drawn_numbers, round.current_prize)) return;
-    claiming = true;
+  async function markNumber(number, wasDrawn) {
+    if (markingNumber !== null || alreadyWonCurrentPrize()) return;
+    if (!wasDrawn) {
+      toast(`O número ${number} ainda não foi sorteado.`, "error");
+      return;
+    }
+    if (currentMarks().includes(number)) {
+      toast(`O número ${number} já está marcado.`);
+      return;
+    }
+
+    markingNumber = number;
+    const button = document.querySelector(`[data-card-number="${number}"]`);
+    button?.classList.add("marking");
+    if (button) button.disabled = true;
+
     try {
-      const { data, error } = await BF.supabase.rpc("claim_win", { p_round_id: round.id, p_card_id: card.id });
+      const { data, error } = await BF.supabase.rpc("mark_card_number", {
+        p_round_id: round.id,
+        p_card_id: card.id,
+        p_number: number
+      });
       if (error) throw error;
-      if (data?.success) {
-        card.won_prize = Number(round.current_prize);
-        toast(`Bingo! Você conquistou ${prizeLabel(round.current_prize)}.`, "success");
+
+      if (data?.card) card = data.card;
+      renderGame();
+
+      if (data?.won) {
+        toast(`Bingo! Você conquistou ${prizeLabel(round.current_prize)}.`, "success", 7000);
+        celebrate();
+      } else {
+        toast(`Número ${number} marcado.`, "success", 1800);
       }
     } catch (error) {
-      console.warn("Validação de vitória:", error.message);
+      const migrationMissing = String(error.message || "").includes("mark_card_number");
+      toast(migrationMissing
+        ? "A atualização do banco ainda não foi aplicada. Execute supabase/migration-manual-marking.sql."
+        : (error.message || "Não foi possível marcar o número."), "error", 7000);
+      renderGame();
     } finally {
-      claiming = false;
+      markingNumber = null;
     }
   }
 
@@ -68,10 +136,21 @@
     const names = winners.map(item => escapeHtml(item.name)).join(", ") || "Ganhador confirmado";
     showModal({
       title: `Bingo! ${prizeLabel(prize.prize_number)}`,
-      body: `<p><strong>${names}</strong></p><p>O próximo sorteio começará após a pausa.</p>`,
+      body: `<p><strong>${names}</strong></p><p>Empates ainda podem ser confirmados até a troca do sorteio.</p>`,
       autoCloseMs: window.BINGO_FEST_CONFIG.winnerPauseMs
     });
     celebrate();
+  }
+
+  function announceNewCard(prizeNumber) {
+    showModal({
+      title: "Nova cartela liberada",
+      body: `<p>Os números foram renovados para <strong>${prizeLabel(prizeNumber)}</strong>.</p><p>Marque novamente apenas os números sorteados neste novo prêmio.</p>`,
+      actions: '<button class="button button-primary" type="button" data-close-new-card>Começar</button>'
+    });
+    document.querySelector("[data-close-new-card]")?.addEventListener("click", () => {
+      document.getElementById("modal-root").innerHTML = "";
+    });
   }
 
   async function applyRoundUpdate(updated) {
@@ -89,12 +168,17 @@
     if (Number(round.current_prize) !== previousPrize) {
       announcedPrize = null;
       lastSpokenNumber = null;
-    } else if ((round.drawn_numbers || []).length > previousLength && latest !== lastSpokenNumber) {
+      renderGame();
+      announceNewCard(round.current_prize);
+      return;
+    }
+
+    if ((round.drawn_numbers || []).length > previousLength && latest !== lastSpokenNumber) {
       lastSpokenNumber = latest;
       speakNumber(latest);
     }
+
     renderGame();
-    await tryClaim();
     announceWinner();
   }
 
@@ -115,7 +199,6 @@
     if (round.status === "cancelled") return navigate("/lobby");
 
     renderGame();
-    await tryClaim();
     announceWinner();
 
     channel = BF.supabase.channel(`round-${roundId}-game`)
