@@ -7,6 +7,7 @@
   <meta name="description" content="Bingo Fest — bingo online de 75 bolas, multijogador e em tempo real.">
   <title>Bingo Fest — Família REI</title>
   <link rel="icon" href="assets/images/rei-oficial.png" type="image/png">
+  <link rel="preload" href="assets/images/rei-oficial.png" as="image">
   <link rel="stylesheet" href="css/style.css?v=20260624-3">
   <link rel="stylesheet" href="css/fixes.css?v=20260624-3">
   <link rel="stylesheet" href="css/manual-game.css?v=20260624-1">
@@ -37,6 +38,16 @@
   </div>
   <div id="toast-region" class="toast-region" aria-live="assertive" aria-atomic="true"></div>
   <div id="modal-root"></div>
-  <script src="js/boot.js?v=20260624-3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
+  <script src="js/config.js?v=20260624-3" defer></script>
+  <script src="js/utils.js?v=20260624-3" defer></script>
+  <script src="js/auth.js?v=20260624-3" defer></script>
+  <script src="js/lobby.js?v=20260624-3" defer></script>
+  <script src="js/waiting-room.js?v=20260624-3" defer></script>
+  <script src="js/game.js?v=20260624-3" defer></script>
+  <script src="js/history.js?v=20260624-3" defer></script>
+  <script src="js/admin.js?v=20260624-3" defer></script>
+  <script src="js/app.js?v=20260624-3" defer></script>
 </body>
 </html>
