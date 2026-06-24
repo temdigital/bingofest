@@ -1,0 +1,3528 @@
+diff -ruN source_before_final/.github/workflows/export-on-pr.yml source/.github/workflows/export-on-pr.yml
+--- source_before_final/.github/workflows/export-on-pr.yml	2026-06-24 06:19:51.000000000 +0000
++++ source/.github/workflows/export-on-pr.yml	1970-01-01 00:00:00.000000000 +0000
+@@ -1,23 +0,0 @@
+-name: Exportar código no pull request
+-
+-on:
+-  pull_request:
+-    branches:
+-      - main
+-
+-permissions:
+-  contents: read
+-
+-jobs:
+-  exportar:
+-    runs-on: ubuntu-latest
+-    steps:
+-      - uses: actions/checkout@v4
+-      - run: |
+-          rm -rf .git
+-          zip -r temnoentornosul-auditoria.zip . -x "temnoentornosul-auditoria.zip"
+-      - uses: actions/upload-artifact@v4
+-        with:
+-          name: temnoentornosul-auditoria
+-          path: temnoentornosul-auditoria.zip
+-          retention-days: 1
+diff -ruN source_before_final/.github/workflows/export-repository.yml source/.github/workflows/export-repository.yml
+--- source_before_final/.github/workflows/export-repository.yml	2026-06-24 06:19:51.000000000 +0000
++++ source/.github/workflows/export-repository.yml	1970-01-01 00:00:00.000000000 +0000
+@@ -1,29 +0,0 @@
+-name: Exportar repositório para auditoria
+-
+-on:
+-  push:
+-    branches:
+-      - auditoria-portal-20260624
+-
+-permissions:
+-  contents: read
+-
+-jobs:
+-  exportar:
+-    runs-on: ubuntu-latest
+-    steps:
+-      - name: Baixar código
+-        uses: actions/checkout@v4
+-
+-      - name: Preparar pacote
+-        run: |
+-          rm -rf .git
+-          zip -r temnoentornosul-auditoria.zip . -x "temnoentornosul-auditoria.zip"
+-
+-      - name: Enviar artefato
+-        uses: actions/upload-artifact@v4
+-        with:
+-          name: temnoentornosul-auditoria
+-          path: temnoentornosul-auditoria.zip
+-          if-no-files-found: error
+-          retention-days: 1
+diff -ruN source_before_final/aceite-convite.html source/aceite-convite.html
+--- source_before_final/aceite-convite.html	2026-06-24 06:19:51.000000000 +0000
++++ source/aceite-convite.html	2026-06-24 06:27:37.837271372 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Aceite de Convite | Tem no Entorno Sul</title>
+@@ -35,5 +26,8 @@
+     </main>
+     <script src="js/supabase-config.js"></script>
+     <script src="js/aceite-convite.js"></script>
++
++    <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ </html>
+diff -ruN source_before_final/admin/dashboard.html source/admin/dashboard.html
+--- source_before_final/admin/dashboard.html	2026-06-24 06:19:51.000000000 +0000
++++ source/admin/dashboard.html	2026-06-24 06:27:37.893629954 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta
+@@ -297,4 +288,4 @@
+ <script src="dashboard.js"></script>
+ 
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/admin/js/admin-core.js source/admin/js/admin-core.js
+--- source_before_final/admin/js/admin-core.js	2026-06-24 06:19:51.000000000 +0000
++++ source/admin/js/admin-core.js	2026-06-24 06:27:37.958727548 +0000
+@@ -169,8 +169,7 @@
+         state.currentRoles = profile.roles;
+ 
+         if (!canAccessDashboard()) {
+-            await client.auth.signOut();
+-            window.location.replace('/index.html');
++            window.location.replace('/index.html?acesso=restrito');
+             return false;
+         }
+ 
+@@ -289,21 +288,33 @@
+             return;
+         }
+ 
+-        const { error: deleteError } = await client
++        const { data: currentRows, error: currentError } = await client
+             .from('usuarios_roles')
+-            .delete()
++            .select('id, role_id')
+             .eq('usuario_id', userId);
+ 
+-        if (deleteError) throw deleteError;
++        if (currentError) throw currentError;
++
++        const alreadyHasTarget = (currentRows || []).some((item) => Number(item.role_id) === Number(role.id));
++
++        if (!alreadyHasTarget) {
++            const { error: insertError } = await client
++                .from('usuarios_roles')
++                .insert({
++                    usuario_id: userId,
++                    role_id: role.id
++                });
+ 
+-        const { error: insertError } = await client
++            if (insertError) throw insertError;
++        }
++
++        const { error: deleteError } = await client
+             .from('usuarios_roles')
+-            .insert({
+-                usuario_id: userId,
+-                role_id: role.id
+-            });
++            .delete()
++            .eq('usuario_id', userId)
++            .neq('role_id', role.id);
+ 
+-        if (insertError) throw insertError;
++        if (deleteError) throw deleteError;
+     }
+ 
+     function makeWhatsappLink(whatsapp) {
+@@ -423,4 +434,4 @@
+         safeTableCount,
+         safeSelect
+     };
+-})();
+\ No newline at end of file
++})();
+diff -ruN source_before_final/admin/js/admin-eventos.js source/admin/js/admin-eventos.js
+--- source_before_final/admin/js/admin-eventos.js	2026-06-24 06:19:51.000000000 +0000
++++ source/admin/js/admin-eventos.js	2026-06-24 06:27:37.954933094 +0000
+@@ -34,7 +34,10 @@
+ 
+     function parseValorEvento(value) {
+         const raw = String(value || '').trim();
+-        if (!raw) return null;
++
++        if (!raw) {
++            return { value: null, error: null };
++        }
+ 
+         const normalized = raw
+             .toLowerCase()
+@@ -43,7 +46,7 @@
+             .trim();
+ 
+         if (['gratuito', 'gratis', 'free', 'sem custo', 'entrada franca', '0', '0,00', 'r$ 0,00'].includes(normalized)) {
+-            return null;
++            return { value: null, error: null };
+         }
+ 
+         const cleaned = raw
+@@ -52,7 +55,12 @@
+             .replace(',', '.');
+ 
+         const number = Number.parseFloat(cleaned);
+-        return Number.isFinite(number) ? number : null;
++
++        if (!Number.isFinite(number) || number < 0) {
++            return { value: null, error: 'Informe um valor válido em reais ou deixe o campo vazio para evento gratuito.' };
++        }
++
++        return { value: number, error: null };
+     }
+ 
+     function resumo(text, limit = 130) {
+@@ -311,8 +319,8 @@
+                     </div>
+ 
+                     <div class="admin-form-group">
+-                        <label>Valor</label>
+-                        <input type="text" id="eventoValor" value="${AdminCore.escapeHTML(evento?.valor || '')}" placeholder="Gratuito ou valor em reais. Ex.: 20,00">
++                        <label>Valor em reais</label>
++                        <input type="text" id="eventoValor" inputmode="decimal" value="${AdminCore.escapeHTML(evento?.valor ?? '')}" placeholder="Deixe vazio se for gratuito. Ex.: 20,00">
+                     </div>
+ 
+                     <div class="admin-form-group">
+@@ -370,6 +378,12 @@
+             return;
+         }
+ 
++        const valorResult = parseValorEvento(AdminCore.getInputValue('eventoValor'));
++        if (valorResult.error) {
++            AdminUI.renderToast(valorResult.error, 'error');
++            return;
++        }
++
+         const slug = eventoId ? (existing?.slug || await generateUniqueSlug(nome, eventoId)) : await generateUniqueSlug(nome);
+ 
+         const payload = {
+@@ -386,7 +400,7 @@
+             endereco_texto: AdminCore.getInputValue('eventoEnderecoTexto'),
+             realizador: AdminCore.getInputValue('eventoRealizador'),
+             responsavel: AdminCore.getInputValue('eventoResponsavel'),
+-            valor: parseValorEvento(AdminCore.getInputValue('eventoValor')),
++            valor: valorResult.value,
+             latitude: geo.latitude,
+             longitude: geo.longitude,
+             imagem_banner_url: existing?.imagem_banner_url || null,
+diff -ruN source_before_final/admin/js/admin-remocoes.js source/admin/js/admin-remocoes.js
+--- source_before_final/admin/js/admin-remocoes.js	2026-06-24 06:19:51.000000000 +0000
++++ source/admin/js/admin-remocoes.js	2026-06-24 06:27:37.951622638 +0000
+@@ -38,8 +38,9 @@
+     }
+ 
+     function whatsappLink(item, resposta = null) {
+-        const digits = String(item.whatsapp || '').replace(/\D/g, '');
++        let digits = String(item.whatsapp || '').replace(/\D/g, '');
+         if (!digits) return '#';
++        if (!digits.startsWith('55')) digits = `55${digits}`;
+ 
+         const texto = resposta || item.resposta || `Olá, ${item.nome}. Aqui é o Portal Tem no Entorno Sul. Recebemos sua solicitação de remoção nº ${item.numero} e estamos analisando seu pedido. Em breve retornaremos por este canal.`;
+         return `https://wa.me/${digits}?text=${encodeURIComponent(texto)}`;
+@@ -149,7 +150,8 @@
+ 
+     function renderCard(item) {
+         const status = normalizeStatus(item.status);
+-        const isAnswered = status === 'respondido';
++        const hasResponse = Boolean(String(item.resposta || '').trim());
++        const responseSent = Boolean(item.resposta_whatsapp_enviada) || status === 'respondido';
+ 
+         return `
+             <article class="admin-card">
+@@ -177,7 +179,8 @@
+                         <button class="btn-primary" type="button" data-removal-action="responder" data-id="${esc(item.id)}">
+                             <i class="fas fa-reply"></i> Responder
+                         </button>
+-                        ${isAnswered ? `<a class="btn-secondary" href="${esc(whatsappLink(item))}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>` : ''}
++                        ${hasResponse ? `<a class="btn-secondary" href="${esc(whatsappLink(item))}" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i> WhatsApp</a>` : ''}
++                        ${hasResponse && !responseSent ? `<button class="btn-secondary" type="button" data-removal-action="confirmar_envio" data-id="${esc(item.id)}"><i class="fas fa-check"></i> Confirmar envio</button>` : ''}
+                         <button class="btn-secondary" type="button" data-removal-action="arquivar" data-id="${esc(item.id)}">
+                             <i class="fas fa-box-archive"></i> Arquivar
+                         </button>
+@@ -207,6 +210,39 @@
+ 
+         if (action === 'responder') {
+             openResponseModal(item);
++            return;
++        }
++
++        if (action === 'confirmar_envio') {
++            await confirmWhatsappSent(item);
++        }
++    }
++
++    async function confirmWhatsappSent(item) {
++        try {
++            const now = new Date().toISOString();
++            const { error } = await db()
++                .from('solicitacoes_remocao')
++                .update({
++                    status: 'respondido',
++                    resposta_whatsapp_enviada: true,
++                    respondido_por: AdminCore.state.currentUser?.id || null,
++                    respondido_em: now,
++                    updated_at: now
++                })
++                .eq('id', item.id);
++
++            if (error) throw error;
++
++            await AdminCore.logSystem('remocao_envio_confirmado', {
++                numero: item.numero,
++                email: item.email
++            });
++            AdminUI.renderToast('Envio pelo WhatsApp confirmado.');
++            await load();
++        } catch (error) {
++            console.error('[ADMIN REMOÇÕES confirmar envio]', error);
++            AdminUI.renderToast(error.message || 'Erro ao confirmar o envio.', 'error');
+         }
+     }
+ 
+@@ -264,11 +300,11 @@
+                     const { error } = await db()
+                         .from('solicitacoes_remocao')
+                         .update({
+-                            status: 'respondido',
++                            status: 'em_analise',
+                             resposta,
+-                            resposta_whatsapp_enviada: true,
+-                            respondido_por: AdminCore.state.currentUser?.id || null,
+-                            respondido_em: new Date().toISOString(),
++                            resposta_whatsapp_enviada: false,
++                            respondido_por: null,
++                            respondido_em: null,
+                             updated_at: new Date().toISOString()
+                         })
+                         .eq('id', item.id);
+@@ -277,7 +313,8 @@
+ 
+                     await AdminCore.logSystem('remocao_resposta', { numero: item.numero, email: item.email });
+                     AdminUI.closeModal('removalResponseModal');
+-                    window.open(whatsappLink(item, resposta), '_blank', 'noopener');
++                    window.open(whatsappLink(item, resposta), '_blank', 'noopener,noreferrer');
++                    AdminUI.renderToast('Resposta registrada. Após enviar no WhatsApp, confirme o envio no cartão.');
+                     await load();
+                 } catch (error) {
+                     console.error('[ADMIN REMOÇÕES resposta]', error);
+diff -ruN source_before_final/admin/js/admin-saude.js source/admin/js/admin-saude.js
+--- source_before_final/admin/js/admin-saude.js	2026-06-24 06:19:51.000000000 +0000
++++ source/admin/js/admin-saude.js	1970-01-01 00:00:00.000000000 +0000
+@@ -1,514 +0,0 @@
+-// admin/js/admin-saude.js
+-
+-(function () {
+-    'use strict';
+-
+-    /*
+-        Sprint 1 — Saúde do Sistema
+-        Correção definitiva do loop 403.
+-
+-        Este arquivo é o módulo REAL carregado pelo dashboard.html.
+-        O dashboard usa AdminHealth, não AdminSaude.
+-
+-        Portanto:
+-        - NÃO consulta logs_sistema.
+-        - NÃO consulta publicidade_cliques.
+-        - NÃO registra log operacional durante o diagnóstico.
+-        - NÃO dispara requisições para tabelas operacionais que causavam 403.
+-        - Audita apenas tabelas principais, Storage e módulos JS carregados.
+-    */
+-
+-    const MAIN_TABLES = [
+-        'usuarios',
+-        'roles',
+-        'usuarios_roles',
+-        'categorias',
+-        'publicacoes',
+-        'publicacoes_categorias',
+-        'eventos',
+-        'negocios',
+-        'tipos_negocio',
+-        'colunistas',
+-        'comunidade_posts',
+-        'comunidade_respostas',
+-        'convites_portal',
+-        'publicidades'
+-    ];
+-
+-    const OPERATIONAL_TABLES = [
+-        {
+-            table: 'publicidade_cliques',
+-            description: 'Tabela operacional de métricas de publicidade. Não é consultada pela Saúde para evitar falso erro 403 no navegador.'
+-        },
+-        {
+-            table: 'logs_sistema',
+-            description: 'Tabela operacional de logs. Não é consultada pela Saúde para evitar falso erro 403 no navegador.'
+-        }
+-    ];
+-
+-    const MODULES = [
+-        { objectName: 'AdminCore', label: 'Base administrativa' },
+-        { objectName: 'AdminUI', label: 'Interface administrativa' },
+-        { objectName: 'AdminStorage', label: 'Mídias' },
+-        { objectName: 'AdminGeolocation', label: 'Geolocalização' },
+-        { objectName: 'AdminUsers', label: 'Usuários' },
+-        { objectName: 'AdminPublicacoes', label: 'Publicações' },
+-        { objectName: 'AdminEventos', label: 'Eventos' },
+-        { objectName: 'AdminNegocios', label: 'Parceiros' },
+-        { objectName: 'AdminColunistas', label: 'Colunistas' },
+-        { objectName: 'AdminComentarios', label: 'Comunidade' },
+-        { objectName: 'AdminConvites', label: 'Convites' },
+-        { objectName: 'AdminMarketing', label: 'Publicidade' }
+-    ];
+-
+-    let lastDiagnostic = null;
+-
+-    function getClient() {
+-        if (window.AdminCore && typeof AdminCore.getClient === 'function') {
+-            return AdminCore.getClient();
+-        }
+-
+-        return window.supabaseClient || null;
+-    }
+-
+-    function escapeHTML(value) {
+-        if (window.AdminCore && typeof AdminCore.escapeHTML === 'function') {
+-            return AdminCore.escapeHTML(value ?? '');
+-        }
+-
+-        return String(value ?? '')
+-            .replaceAll('&', '&amp;')
+-            .replaceAll('<', '&lt;')
+-            .replaceAll('>', '&gt;')
+-            .replaceAll('"', '&quot;')
+-            .replaceAll("'", '&#039;');
+-    }
+-
+-    function setPage() {
+-        if (window.AdminUI && typeof AdminUI.setPage === 'function') {
+-            AdminUI.setPage('saude');
+-        }
+-    }
+-
+-    function setContent(html) {
+-        if (window.AdminUI && typeof AdminUI.setContent === 'function') {
+-            AdminUI.setContent(html);
+-            return;
+-        }
+-
+-        const root = document.getElementById('adminContent');
+-
+-        if (root) {
+-            root.innerHTML = html;
+-        }
+-    }
+-
+-    function renderLoading() {
+-        if (window.AdminUI && typeof AdminUI.renderLoading === 'function') {
+-            AdminUI.renderLoading('Verificando saúde do sistema...');
+-            return;
+-        }
+-
+-        setContent('<p>Verificando saúde do sistema...</p>');
+-    }
+-
+-    function renderToast(message, type = 'success') {
+-        if (window.AdminUI && typeof AdminUI.renderToast === 'function') {
+-            AdminUI.renderToast(message, type);
+-            return;
+-        }
+-
+-        if (type === 'error') {
+-            alert(message);
+-        }
+-    }
+-
+-    function serializeError(error) {
+-        if (!error) return null;
+-        if (typeof error === 'string') return error;
+-
+-        const parts = [
+-            error.message,
+-            error.details,
+-            error.hint,
+-            error.code,
+-            error.status,
+-            error.statusText
+-        ].filter(Boolean);
+-
+-        if (parts.length) return parts.join(' | ');
+-
+-        try {
+-            return JSON.stringify(error);
+-        } catch {
+-            return 'Erro desconhecido.';
+-        }
+-    }
+-
+-    async function checkTable(tableName) {
+-        const client = getClient();
+-
+-        try {
+-            const { data, error } = await client
+-                .from(tableName)
+-                .select('*')
+-                .limit(1);
+-
+-            if (error) {
+-                return {
+-                    table: tableName,
+-                    ok: false,
+-                    count: null,
+-                    message: serializeError(error)
+-                };
+-            }
+-
+-            let count = Array.isArray(data) ? data.length : 0;
+-            let message = 'Leitura permitida';
+-
+-            try {
+-                const countResult = await client
+-                    .from(tableName)
+-                    .select('*', {
+-                        count: 'exact',
+-                        head: true
+-                    });
+-
+-                if (!countResult.error && typeof countResult.count === 'number') {
+-                    count = countResult.count;
+-                }
+-            } catch {
+-                message = 'Leitura permitida. Contagem exata indisponível.';
+-            }
+-
+-            return {
+-                table: tableName,
+-                ok: true,
+-                count,
+-                message
+-            };
+-
+-        } catch (error) {
+-            return {
+-                table: tableName,
+-                ok: false,
+-                count: null,
+-                message: serializeError(error)
+-            };
+-        }
+-    }
+-
+-    async function checkStorage() {
+-        const client = getClient();
+-
+-        try {
+-            const { data, error } = await client.storage
+-                .from('midias')
+-                .list('', {
+-                    limit: 1
+-                });
+-
+-            if (error) {
+-                return {
+-                    ok: false,
+-                    count: null,
+-                    message: serializeError(error)
+-                };
+-            }
+-
+-            return {
+-                ok: true,
+-                count: Array.isArray(data) ? data.length : 0,
+-                message: 'Bucket midias acessível'
+-            };
+-
+-        } catch (error) {
+-            return {
+-                ok: false,
+-                count: null,
+-                message: serializeError(error)
+-            };
+-        }
+-    }
+-
+-    function checkModules() {
+-        return MODULES.map((item) => {
+-            const mod = window[item.objectName];
+-            const loaded = Boolean(mod);
+-            const executable = loaded && (
+-                typeof mod.init === 'function' ||
+-                typeof mod.load === 'function' ||
+-                item.objectName === 'AdminCore' ||
+-                item.objectName === 'AdminUI'
+-            );
+-
+-            return {
+-                label: item.label,
+-                objectName: item.objectName,
+-                loaded: loaded && executable,
+-                message: loaded ? 'Carregado' : 'Não encontrado'
+-            };
+-        });
+-    }
+-
+-    function getCurrentUser() {
+-        return window.AdminCore?.state?.currentUser || null;
+-    }
+-
+-    function getCurrentRoles() {
+-        return window.AdminCore?.state?.currentRoles || [];
+-    }
+-
+-    async function buildDiagnostic() {
+-        const client = getClient();
+-
+-        if (!client) {
+-            throw new Error('Cliente Supabase não encontrado.');
+-        }
+-
+-        const tables = [];
+-
+-        for (const tableName of MAIN_TABLES) {
+-            tables.push(await checkTable(tableName));
+-        }
+-
+-        const operational = OPERATIONAL_TABLES.map((item) => ({
+-            table: item.table,
+-            ok: true,
+-            count: null,
+-            message: item.description,
+-            ignored: true
+-        }));
+-
+-        const storage = await checkStorage();
+-        const modules = checkModules();
+-        const user = getCurrentUser();
+-
+-        return {
+-            generated_at: new Date().toISOString(),
+-            url: window.location.href,
+-            user: user
+-                ? {
+-                    id: user.id || null,
+-                    nome: user.nome || null,
+-                    email: user.email || null,
+-                    status: user.status || null
+-                }
+-                : null,
+-            roles: getCurrentRoles(),
+-            tables,
+-            operational_tables: operational,
+-            storage,
+-            modules
+-        };
+-    }
+-
+-    function okBadge(ok, ignored = false) {
+-        if (ignored) {
+-            return '<span class="status-badge status-ativo">Ignorada</span>';
+-        }
+-
+-        return ok
+-            ? '<span class="status-badge status-ativo">OK</span>'
+-            : '<span class="status-badge status-inativo">Falha</span>';
+-    }
+-
+-    function renderTableRows(results) {
+-        return results.map((item) => `
+-            <tr>
+-                <td>${escapeHTML(item.table)}</td>
+-                <td>${okBadge(item.ok, item.ignored)}</td>
+-                <td>${item.count === null || item.count === undefined ? '-' : Number(item.count)}</td>
+-                <td>${escapeHTML(item.message || '-')}</td>
+-            </tr>
+-        `).join('');
+-    }
+-
+-    function renderModuleRows(modules) {
+-        return modules.map((item) => `
+-            <tr>
+-                <td>${escapeHTML(item.label)}</td>
+-                <td>${escapeHTML(item.objectName)}</td>
+-                <td>${okBadge(item.loaded)}</td>
+-                <td>${escapeHTML(item.message)}</td>
+-            </tr>
+-        `).join('');
+-    }
+-
+-    function renderCards(diagnostic) {
+-        const okTables = diagnostic.tables.filter((item) => item.ok).length;
+-        const failTables = diagnostic.tables.filter((item) => !item.ok).length;
+-        const okModules = diagnostic.modules.filter((item) => item.loaded).length;
+-        const totalModules = diagnostic.modules.length;
+-
+-        return `
+-            <div class="admin-stats-grid health-stats">
+-                <div class="admin-home-card">
+-                    <i class="fas fa-database"></i>
+-                    <strong>${okTables}</strong>
+-                    <span>Tabelas principais OK</span>
+-                </div>
+-
+-                <div class="admin-home-card">
+-                    <i class="fas fa-triangle-exclamation"></i>
+-                    <strong>${failTables}</strong>
+-                    <span>Tabelas principais com falha</span>
+-                </div>
+-
+-                <div class="admin-home-card">
+-                    <i class="fas fa-code"></i>
+-                    <strong>${okModules}/${totalModules}</strong>
+-                    <span>Módulos carregados</span>
+-                </div>
+-
+-                <div class="admin-home-card">
+-                    <i class="fas fa-cloud-upload-alt"></i>
+-                    <strong>${diagnostic.storage.ok ? 'OK' : 'Falha'}</strong>
+-                    <span>Bucket midias</span>
+-                </div>
+-            </div>
+-        `;
+-    }
+-
+-    function renderPage(diagnostic) {
+-        const hasFailures =
+-            diagnostic.tables.some((item) => !item.ok) ||
+-            diagnostic.modules.some((item) => !item.loaded) ||
+-            !diagnostic.storage.ok;
+-
+-        setContent(`
+-            <div class="section-header">
+-                <div>
+-                    <h3>Saúde do sistema</h3>
+-                    <p>Auditoria rápida para evitar retrabalho: tabelas principais, Storage e módulos carregados.</p>
+-                </div>
+-
+-                <button class="btn-primary" type="button" id="copyDiagnosticBtn">
+-                    <i class="fas fa-copy"></i>
+-                    Copiar diagnóstico
+-                </button>
+-            </div>
+-
+-            ${renderCards(diagnostic)}
+-
+-            <div class="permission-card" style="margin: 18px 0;">
+-                ${
+-                    hasFailures
+-                        ? 'Ainda há falhas detectadas nas tabelas principais, módulos ou Storage.'
+-                        : 'Sistema estabilizado: tabelas principais, módulos e Storage responderam corretamente.'
+-                }
+-                As tabelas operacionais de logs e cliques não são consultadas nesta tela para evitar falso erro 403 no navegador.
+-            </div>
+-
+-            <div class="admin-health-section">
+-                <h3>Tabelas principais do Supabase</h3>
+-                <div class="table-wrap">
+-                    <table class="data-table health-table">
+-                        <thead>
+-                            <tr>
+-                                <th>Tabela</th>
+-                                <th>Status</th>
+-                                <th>Registros</th>
+-                                <th>Mensagem</th>
+-                            </tr>
+-                        </thead>
+-                        <tbody>
+-                            ${renderTableRows(diagnostic.tables)}
+-                        </tbody>
+-                    </table>
+-                </div>
+-            </div>
+-
+-            <div class="admin-health-section">
+-                <h3>Tabelas operacionais ignoradas</h3>
+-                <div class="table-wrap">
+-                    <table class="data-table health-table">
+-                        <thead>
+-                            <tr>
+-                                <th>Tabela</th>
+-                                <th>Status</th>
+-                                <th>Registros</th>
+-                                <th>Mensagem</th>
+-                            </tr>
+-                        </thead>
+-                        <tbody>
+-                            ${renderTableRows(diagnostic.operational_tables)}
+-                        </tbody>
+-                    </table>
+-                </div>
+-            </div>
+-
+-            <div class="admin-health-section">
+-                <h3>Storage</h3>
+-                <div class="health-storage-card ${diagnostic.storage.ok ? 'ok' : 'error'}">
+-                    <div><i class="fas fa-cloud-upload-alt"></i></div>
+-                    <div>
+-                        <strong>${diagnostic.storage.ok ? 'Bucket midias OK' : 'Bucket midias com falha'}</strong>
+-                        <span>${escapeHTML(diagnostic.storage.message || '-')}</span>
+-                    </div>
+-                </div>
+-            </div>
+-
+-            <div class="admin-health-section">
+-                <h3>Módulos JavaScript</h3>
+-                <div class="table-wrap">
+-                    <table class="data-table health-table">
+-                        <thead>
+-                            <tr>
+-                                <th>Módulo</th>
+-                                <th>Objeto</th>
+-                                <th>Status</th>
+-                                <th>Mensagem</th>
+-                            </tr>
+-                        </thead>
+-                        <tbody>
+-                            ${renderModuleRows(diagnostic.modules)}
+-                        </tbody>
+-                    </table>
+-                </div>
+-            </div>
+-        `);
+-
+-        bindActions();
+-    }
+-
+-    function bindActions() {
+-        document.getElementById('copyDiagnosticBtn')?.addEventListener('click', async () => {
+-            const content = JSON.stringify(lastDiagnostic, null, 2);
+-
+-            try {
+-                await navigator.clipboard.writeText(content);
+-                renderToast('Diagnóstico copiado.');
+-            } catch {
+-                window.prompt('Copie o diagnóstico:', content);
+-            }
+-        });
+-    }
+-
+-    async function load() {
+-        setPage();
+-        renderLoading();
+-
+-        try {
+-            lastDiagnostic = await buildDiagnostic();
+-            renderPage(lastDiagnostic);
+-        } catch (error) {
+-            console.error('[ADMIN HEALTH]', error);
+-            setContent(`
+-                <div class="admin-empty-state empty-state">
+-                    <i class="fas fa-triangle-exclamation"></i>
+-                    <h3>Não foi possível carregar a saúde do sistema</h3>
+-                    <p>${escapeHTML(serializeError(error))}</p>
+-                </div>
+-            `);
+-        }
+-    }
+-
+-    window.AdminSaude = {
+-        init: load,
+-        load,
+-        buildDiagnostic
+-    };
+-})();
+-
+-window.AdminHealth = window.AdminHealth || window.AdminSaude;
+diff -ruN source_before_final/admin/login.html source/admin/login.html
+--- source_before_final/admin/login.html	2026-06-24 06:19:51.000000000 +0000
++++ source/admin/login.html	2026-06-24 06:27:37.891630404 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+     <meta
+         name="viewport"
+@@ -496,4 +487,4 @@
+ <script src="login.js"></script>
+ 
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/admin/publicidade.html source/admin/publicidade.html
+--- source_before_final/admin/publicidade.html	2026-06-24 06:19:51.000000000 +0000
++++ source/admin/publicidade.html	1970-01-01 00:00:00.000000000 +0000
+@@ -1,22 +0,0 @@
+-<!DOCTYPE html>
+-<html lang="pt-BR">
+-<head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+-    <meta charset="UTF-8">
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+-    <title>Publicidade | Tem no Entorno Sul</title>
+-    <meta http-equiv="refresh" content="0; url=dashboard.html?section=publicidade">
+-</head>
+-<body>
+-    <p>Redirecionando para <a href="dashboard.html?section=publicidade">Publicidade</a>...</p>
+-    <script>window.location.replace('dashboard.html?section=publicidade');</script>
+-</body>
+-</html>
+diff -ruN source_before_final/api/share.js source/api/share.js
+--- source_before_final/api/share.js	2026-06-24 06:19:51.000000000 +0000
++++ source/api/share.js	2026-06-24 06:27:37.855167691 +0000
+@@ -1,6 +1,7 @@
+ const SUPABASE_URL = 'https://flidbkfrfosuahgphiza.supabase.co';
+ const SUPABASE_ANON_KEY = 'sb_publishable_mCBYSpZc45Pw345wZ1coEA_rYL61Ea8';
+ const SITE_URL = 'https://www.temnoentornosul.com.br';
++const DEFAULT_IMAGE = `${SITE_URL}/assets/logo-tem-no-entorno-sul.png`;
+ 
+ function escapeHTML(value) {
+   return String(value || '')
+@@ -15,41 +16,70 @@
+   return String(value || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+ }
+ 
++function isValidSlug(value) {
++  return /^[a-z0-9][a-z0-9-]{0,159}$/i.test(value);
++}
++
++function safeImageUrl(value) {
++  try {
++    const url = new URL(String(value || ''), SITE_URL);
++    return url.protocol === 'https:' ? url.toString() : DEFAULT_IMAGE;
++  } catch {
++    return DEFAULT_IMAGE;
++  }
++}
++
+ async function fetchFromSupabase(tipo, slug) {
+   const table = tipo === 'evento' ? 'eventos' : 'publicacoes';
+   const select = tipo === 'evento'
+     ? 'id,nome,descricao,slug,imagem_banner_url'
+     : 'id,titulo,subtitulo,conteudo,slug,imagem_capa_url';
+   const url = `${SUPABASE_URL}/rest/v1/${table}?select=${encodeURIComponent(select)}&slug=eq.${encodeURIComponent(slug)}&limit=1`;
+-  const res = await fetch(url, {
++
++  const response = await fetch(url, {
+     headers: {
+       apikey: SUPABASE_ANON_KEY,
+       Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+     }
+   });
+-  if (!res.ok) return null;
+-  const rows = await res.json();
+-  return rows && rows[0] ? rows[0] : null;
++
++  if (!response.ok) return null;
++  const rows = await response.json();
++  return Array.isArray(rows) && rows[0] ? rows[0] : null;
+ }
+ 
+ module.exports = async function handler(req, res) {
+   const tipo = req.query.tipo === 'evento' ? 'evento' : 'publicacao';
+   const slug = String(req.query.slug || '').trim();
+   const fallbackUrl = `${SITE_URL}/${tipo === 'evento' ? 'eventos.html' : 'publicacoes.html'}`;
+-  if (!slug) {
++
++  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
++  res.setHeader('X-Content-Type-Options', 'nosniff');
++
++  if (!isValidSlug(slug)) {
+     res.writeHead(302, { Location: fallbackUrl });
+     res.end();
+     return;
+   }
+ 
+-  const item = await fetchFromSupabase(tipo, slug);
+-  const title = tipo === 'evento' ? (item?.nome || 'Evento') : (item?.titulo || 'Publicação');
++  let item = null;
++  try {
++    item = await fetchFromSupabase(tipo, slug);
++  } catch (error) {
++    console.error('[SHARE] Supabase:', error);
++  }
++
++  if (!item) {
++    res.writeHead(302, { Location: fallbackUrl });
++    res.end();
++    return;
++  }
++
++  const title = tipo === 'evento' ? (item.nome || 'Evento') : (item.titulo || 'Publicação');
+   const description = tipo === 'evento'
+-    ? stripHTML(item?.descricao || '').slice(0, 180)
+-    : stripHTML(item?.subtitulo || item?.conteudo || '').slice(0, 180);
+-  const image = tipo === 'evento'
+-    ? (item?.imagem_banner_url || `${SITE_URL}/assets/logo-tem-no-entorno-sul.png`)
+-    : (item?.imagem_capa_url || `${SITE_URL}/assets/logo-tem-no-entorno-sul.png`);
++    ? stripHTML(item.descricao || '').slice(0, 180)
++    : stripHTML(item.subtitulo || item.conteudo || '').slice(0, 180);
++  const image = safeImageUrl(tipo === 'evento' ? item.imagem_banner_url : item.imagem_capa_url);
+   const target = `${SITE_URL}/${tipo === 'evento' ? 'evento.html' : 'publicacao.html'}?slug=${encodeURIComponent(slug)}`;
+ 
+   const html = `<!doctype html><html lang="pt-BR"><head>
+@@ -70,6 +100,7 @@
+ <meta name="twitter:image" content="${escapeHTML(image)}">
+ <script>setTimeout(function(){location.replace(${JSON.stringify(target)});},500);</script>
+ </head><body style="font-family:Arial,sans-serif;padding:24px"><h1>${escapeHTML(title)}</h1><p>${escapeHTML(description)}</p><p><a href="${escapeHTML(target)}">Abrir conteúdo</a></p></body></html>`;
++
+   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
+   res.status(200).send(html);
+Binary files source_before_final/assets/logo-tem-no-entorno-sul.png.png and source/assets/logo-tem-no-entorno-sul.png.png differ
+diff -ruN source_before_final/cadastro.html source/cadastro.html
+--- source_before_final/cadastro.html	2026-06-24 06:19:51.000000000 +0000
++++ source/cadastro.html	2026-06-24 06:27:37.841014496 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 
+@@ -121,5 +112,8 @@
+ <script src="components/public-footer.js"></script>
+ <script src="js/auth-cadastro.js"></script>
+ 
++
++    <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ </html>
+diff -ruN source_before_final/colunista.html source/colunista.html
+--- source_before_final/colunista.html	2026-06-24 06:19:51.000000000 +0000
++++ source/colunista.html	2026-06-24 06:27:37.851773392 +0000
+@@ -2,15 +2,6 @@
+ <html lang="pt-BR">
+ 
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -57,8 +48,7 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ 
+@@ -66,6 +56,7 @@
+ <script src="js/colunista.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ 
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/colunistas.html source/colunistas.html
+--- source_before_final/colunistas.html	2026-06-24 06:19:51.000000000 +0000
++++ source/colunistas.html	2026-06-24 06:27:37.838127108 +0000
+@@ -2,15 +2,6 @@
+ <html lang="pt-BR">
+ 
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta
+@@ -211,8 +202,7 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ 
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+@@ -220,6 +210,7 @@
+ <script src="js/colunistas.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ 
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/components/ad-slot.js source/components/ad-slot.js
+--- source_before_final/components/ad-slot.js	2026-06-24 06:19:51.000000000 +0000
++++ source/components/ad-slot.js	2026-06-24 06:27:37.886044969 +0000
+@@ -24,13 +24,28 @@
+             this.posicao = this.getAttribute('posicao') || this.dataset.posicao || 'entre_cards';
+             this.classList.add('ad-slot', `ad-${this.posicao}`);
+             this.setAttribute('data-ad-posicao', this.posicao);
++            this.impressionTracked = false;
++            this.onConsentChanged = (event) => {
++                if (event.detail?.status === 'accepted' && this.currentAd) {
++                    this.trackImpression(this.currentAd);
++                }
++            };
++            window.addEventListener('temnoentornosul:consent-changed', this.onConsentChanged);
+             this.load();
+         }
+ 
++        disconnectedCallback() {
++            window.removeEventListener('temnoentornosul:consent-changed', this.onConsentChanged);
++        }
++
+         client() {
+             return window.supabaseClient || null;
+         }
+ 
++        canTrack() {
++            return window.CookieConsent?.isAccepted?.() === true;
++        }
++
+         esc(value) {
+             return String(value ?? '')
+                 .replaceAll('&', '&amp;')
+@@ -81,6 +96,7 @@
+                     return;
+                 }
+ 
++                this.currentAd = ad;
+                 this.render(ad);
+                 this.trackImpression(ad);
+             } catch (error) {
+@@ -152,7 +168,7 @@
+                             class="ad-link"
+                             href="${this.esc(href)}"
+                             target="_blank"
+-                            rel="noopener sponsored"
++                            rel="noopener noreferrer sponsored"
+                             data-ad-click="${this.esc(ad.id)}"
+                             aria-label="Abrir publicidade: ${this.esc(ad.titulo || 'anúncio')}"
+                         >${content}</a>
+@@ -168,13 +184,14 @@
+ 
+         async trackImpression(ad) {
+             const supabase = this.client();
+-            if (!supabase || !ad?.id) return;
++            if (!supabase || !ad?.id || !this.canTrack() || this.impressionTracked) return;
+ 
+             try {
+                 await supabase
+                     .from(TABLE_ADS)
+                     .update({ impressoes: Number(ad.impressoes || 0) + 1 })
+                     .eq('id', ad.id);
++                this.impressionTracked = true;
+             } catch (error) {
+                 console.warn('[AD IMPRESSION]', error);
+             }
+@@ -182,7 +199,7 @@
+ 
+         async trackClick(ad) {
+             const supabase = this.client();
+-            if (!supabase || !ad?.id) return;
++            if (!supabase || !ad?.id || !this.canTrack()) return;
+ 
+             try {
+                 await supabase
+diff -ruN source_before_final/components/footer.js source/components/footer.js
+--- source_before_final/components/footer.js	2026-06-24 06:19:51.000000000 +0000
++++ source/components/footer.js	1970-01-01 00:00:00.000000000 +0000
+@@ -1,62 +0,0 @@
+-// components/footer.js
+-(function() {
+-    function carregarFooter() {
+-        const placeholder = document.getElementById('footer-placeholder');
+-        if (!placeholder) return;
+-
+-        if (window.location.pathname.includes('/admin/')) return;
+-
+-        const footerHTML = `
+-            <footer class="footer">
+-                <div class="container footer-container">
+-                    <div class="footer-col">
+-                        <img src="https://i.imgur.com/lD6krRL.png" alt="Tem no Entorno Sul" class="footer-logo" loading="lazy">
+-                        <p class="footer-description">O seu portal de notícias e eventos do Entorno Sul. Trazendo informação relevante e de qualidade para toda a região.</p>
+-                        <div class="social-links">
+-                            <a href="https://www.facebook.com/temnoentornosul" class="social-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
+-                            <a href="https://www.instagram.com/temnoentornosul" class="social-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+-                            <a href="https://www.youtube.com/@temnoentornosul" class="social-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+-                        </div>
+-                    </div>
+-                    <div class="footer-col">
+-                        <h3 class="footer-title">Links Rápidos</h3>
+-                        <ul class="footer-links">
+-                            <li><a href="./index.html">Home</a></li>
+-                            <li><a href="./publicacoes.html">Publicações</a></li>
+-                            <li><a href="./eventos.html">Eventos</a></li>
+-                            <li><a href="./colunistas.html">Colunistas</a></li>
+-                            <li><a href="./parceiros.html">Parceiros</a></li>
+-                            <li><a href="./contato.html">Contato</a></li>
+-                        </ul>
+-                    </div>
+-                    <div class="footer-col">
+-                        <h3 class="footer-title">Newsletter</h3>
+-                        <p class="footer-description">Junte-se ao nosso grupo do WhatsApp para receber as novidades do Entorno Sul em tempo real.</p>
+-                        <div class="footer-form">
+-                            <button id="whatsapp-group-btn" class="btn btn-accent" style="margin-top: 10px; width: 100%;">
+-                                <i class="fab fa-whatsapp"></i> Entrar no Grupo
+-                            </button>
+-                        </div>
+-                    </div>
+-                </div>
+-                <div class="footer-bottom">
+-                    <p>&copy; 2026 Tem no Entorno Sul. Todos os direitos reservados.</p>
+-                </div>
+-            </footer>
+-        `;
+-        placeholder.innerHTML = footerHTML;
+-
+-        const whatsappBtn = document.getElementById('whatsapp-group-btn');
+-        if (whatsappBtn) {
+-            whatsappBtn.addEventListener('click', () => {
+-                window.open('https://chat.whatsapp.com/DvTQra8rDQp01NqUCmwa8N', '_blank');
+-            });
+-        }
+-    }
+-
+-    if (document.readyState === 'loading') {
+-        document.addEventListener('DOMContentLoaded', carregarFooter);
+-    } else {
+-        carregarFooter();
+-    }
+-})();
+\ No newline at end of file
+diff -ruN source_before_final/components/header.js source/components/header.js
+--- source_before_final/components/header.js	2026-06-24 06:19:51.000000000 +0000
++++ source/components/header.js	1970-01-01 00:00:00.000000000 +0000
+@@ -1,59 +0,0 @@
+-// components/header.js
+-(function() {
+-    function carregarHeader() {
+-        const placeholder = document.getElementById('header-placeholder');
+-        if (!placeholder) return;
+-
+-        // Não carregar o header público na área administrativa
+-        if (window.location.pathname.includes('/admin/')) return;
+-
+-        const headerHTML = `
+-            <nav class="navbar">
+-                <div class="container navbar-container">
+-                    <a href="./index.html" class="logo-link">
+-                        <img src="https://i.imgur.com/WVSr0qr.png" alt="Tem no Entorno Sul" class="logo">
+-                    </a>
+-                    <ul class="nav-menu" id="navMenu">
+-                        <li><a href="./index.html" class="nav-link">Home</a></li>
+-                        <li><a href="./publicacoes.html" class="nav-link">Publicações</a></li>
+-                        <li><a href="./eventos.html" class="nav-link">Eventos</a></li>
+-                        <li><a href="./colunistas.html" class="nav-link">Colunistas</a></li>
+-                        <li><a href="./parceiros.html" class="nav-link">Parceiros</a></li>
+-                        <li><a href="./contato.html" class="nav-link">Contato</a></li>
+-                        <li><a href="./admin/login.html" class="nav-link btn-login-nav">Entrar</a></li>
+-                    </ul>
+-                    <div class="hamburger" id="hamburger">
+-                        <i class="fas fa-bars"></i>
+-                    </div>
+-                </div>
+-            </nav>
+-        `;
+-        placeholder.innerHTML = headerHTML;
+-
+-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+-        document.querySelectorAll('.nav-link').forEach(link => {
+-            const href = link.getAttribute('href');
+-            if (href === currentPage) {
+-                link.classList.add('active');
+-            }
+-        });
+-
+-        const hamburger = document.getElementById('hamburger');
+-        const navMenu = document.getElementById('navMenu');
+-        if (hamburger && navMenu) {
+-            hamburger.addEventListener('click', () => {
+-                navMenu.classList.toggle('active');
+-                const icon = hamburger.querySelector('i');
+-                if (icon) {
+-                    icon.className = navMenu.classList.contains('active') ? 'fas fa-times' : 'fas fa-bars';
+-                }
+-            });
+-        }
+-    }
+-
+-    if (document.readyState === 'loading') {
+-        document.addEventListener('DOMContentLoaded', carregarHeader);
+-    } else {
+-        carregarHeader();
+-    }
+-})();
+\ No newline at end of file
+diff -ruN source_before_final/components/portal-midia.js source/components/portal-midia.js
+--- source_before_final/components/portal-midia.js	2026-06-24 06:19:51.000000000 +0000
++++ source/components/portal-midia.js	1970-01-01 00:00:00.000000000 +0000
+@@ -1,174 +0,0 @@
+-// components/portal-midia.js
+-
+-(function () {
+-    'use strict';
+-
+-    const TABLE = 'publicidades';
+-    const CLICK_TABLE = 'publicidades_cliques';
+-
+-    function getClient() {
+-        return window.supabaseClient || null;
+-    }
+-
+-    function escapeHTML(value) {
+-        return String(value ?? '')
+-            .replaceAll('&', '&amp;')
+-            .replaceAll('<', '&lt;')
+-            .replaceAll('>', '&gt;')
+-            .replaceAll('"', '&quot;')
+-            .replaceAll("'", '&#039;');
+-    }
+-
+-    function youtubeEmbed(url) {
+-        const raw = String(url || '').trim();
+-        if (!raw) return '';
+-
+-        const patterns = [
+-            /youtube\.com\/watch\?v=([^&]+)/,
+-            /youtu\.be\/([^?&]+)/,
+-            /youtube\.com\/embed\/([^?&]+)/,
+-            /youtube\.com\/shorts\/([^?&]+)/
+-        ];
+-
+-        for (const pattern of patterns) {
+-            const match = raw.match(pattern);
+-            if (match?.[1]) {
+-                return `https://www.youtube.com/embed/${encodeURIComponent(match[1])}`;
+-            }
+-        }
+-
+-        return '';
+-    }
+-
+-    function defaultAd(posicao) {
+-        const labels = {
+-            topo: 'Divulgue sua marca no Tem no Entorno Sul',
+-            meio_home: 'Sua empresa pode aparecer aqui',
+-            entre_cards: 'Publicidade regional com alcance local',
+-            lateral_desktop: 'Espaço para parceiro local',
+-            rodape: 'Tem no Entorno Sul — valorizando o comércio e a comunidade regional'
+-        };
+-
+-        return `
+-            <div class="portal-midia-inner">
+-                <div class="portal-midia-default">
+-                    ${escapeHTML(labels[posicao] || labels.topo)}
+-                </div>
+-            </div>
+-        `;
+-    }
+-
+-    class PortalMidia extends HTMLElement {
+-        connectedCallback() {
+-            this.posicao = this.getAttribute('posicao') || this.getAttribute('data-posicao') || 'topo';
+-            this.classList.add('portal-midia');
+-            this.load();
+-        }
+-
+-        async load() {
+-            const client = getClient();
+-
+-            if (!client) {
+-                this.innerHTML = defaultAd(this.posicao);
+-                return;
+-            }
+-
+-            try {
+-                const now = new Date().toISOString();
+-
+-                const { data, error } = await client
+-                    .from(TABLE)
+-                    .select('id,titulo,posicao,tipo_midia,midia_url,youtube_url,link_destino,texto_alt,data_inicio,data_fim,ativo,prioridade')
+-                    .eq('posicao', this.posicao)
+-                    .eq('ativo', true)
+-                    .lte('data_inicio', now)
+-                    .or(`data_fim.is.null,data_fim.gte.${now}`)
+-                    .order('prioridade', { ascending: false })
+-                    .order('created_at', { ascending: false })
+-                    .limit(1);
+-
+-                if (error) throw error;
+-
+-                const item = data?.[0];
+-
+-                if (!item) {
+-                    this.innerHTML = defaultAd(this.posicao);
+-                    return;
+-                }
+-
+-                this.renderItem(item);
+-
+-            } catch (error) {
+-                console.warn('[PORTAL MIDIA]', error);
+-                this.innerHTML = defaultAd(this.posicao);
+-            }
+-        }
+-
+-        renderItem(item) {
+-            const title = escapeHTML(item.texto_alt || item.titulo || 'Publicidade');
+-            const link = String(item.link_destino || '').trim();
+-            let media = '';
+-
+-            if (item.tipo_midia === 'youtube') {
+-                const embed = youtubeEmbed(item.youtube_url || item.midia_url);
+-                media = embed
+-                    ? `<iframe src="${embed}" title="${title}" loading="lazy" allowfullscreen></iframe>`
+-                    : `<div class="portal-midia-default">Vídeo indisponível</div>`;
+-            } else if (item.tipo_midia === 'video') {
+-                media = `
+-                    <video controls playsinline preload="metadata" title="${title}">
+-                        <source src="${escapeHTML(item.midia_url)}" type="video/mp4">
+-                    </video>
+-                `;
+-            } else {
+-                media = `
+-                    <img
+-                        src="${escapeHTML(item.midia_url)}"
+-                        alt="${title}"
+-                        loading="lazy"
+-                    >
+-                `;
+-            }
+-
+-            this.innerHTML = `
+-                <div class="portal-midia-inner" data-publicidade-id="${escapeHTML(item.id)}">
+-                    ${
+-                        link
+-                            ? `<a class="portal-midia-link" href="${escapeHTML(link)}" target="_blank" rel="noopener sponsored">${media}</a>`
+-                            : media
+-                    }
+-                </div>
+-            `;
+-
+-            this.querySelector('.portal-midia-link')?.addEventListener('click', () => {
+-                this.trackClick(item.id);
+-            });
+-        }
+-
+-        async trackClick(publicidadeId) {
+-            const client = getClient();
+-            if (!client || !publicidadeId) return;
+-
+-            try {
+-                await client
+-                    .from(CLICK_TABLE)
+-                    .insert({
+-                        publicidade_id: publicidadeId,
+-                        pagina: window.location.pathname,
+-                        posicao: this.posicao,
+-                        user_agent: navigator.userAgent
+-                    });
+-            } catch (error) {
+-                console.warn('[PORTAL MIDIA CLICK]', error);
+-            }
+-        }
+-    }
+-
+-    if (!customElements.get('portal-midia')) {
+-        customElements.define('portal-midia', PortalMidia);
+-    }
+-
+-    if (!customElements.get('ad-slot')) {
+-        customElements.define('ad-slot', PortalMidia);
+-    }
+-})();
+diff -ruN source_before_final/components/public-footer.js source/components/public-footer.js
+--- source_before_final/components/public-footer.js	2026-06-24 06:19:51.000000000 +0000
++++ source/components/public-footer.js	2026-06-24 06:27:37.889219268 +0000
+@@ -18,7 +18,7 @@
+                     <div class="footer-market-container" id="footerMarketContainer">
+                         <div class="market-loading">
+                             <i class="fas fa-chart-line"></i>
+-                            Indicadores econômicos e agropecuários: carregando dólar, boi e café...
++                            Indicadores econômicos: carregando cotações...
+                         </div>
+                     </div>
+                 </section>
+@@ -135,7 +135,7 @@
+             container.innerHTML = `
+                 <div class="market-item market-title">
+                     <i class="fas fa-chart-line"></i>
+-                    <div><strong>Indicadores</strong><span>Economia e agro</span></div>
++                    <div><strong>Indicadores econômicos</strong><span>Cotações em tempo real</span></div>
+                 </div>
+ 
+                 <div class="market-item">
+@@ -144,13 +144,13 @@
+                 </div>
+ 
+                 <div class="market-item">
+-                    <i class="fas fa-cow"></i>
+-                    <div><strong>Arroba do boi</strong><span>Referência agro</span></div>
++                    <i class="fas fa-euro-sign"></i>
++                    <div><strong>Euro</strong><span>R$ ${Number(euro.bid).toFixed(2)}</span></div>
+                 </div>
+ 
+                 <div class="market-item">
+-                    <i class="fas fa-mug-hot"></i>
+-                    <div><strong>Saca do café</strong><span>Referência agro</span></div>
++                    <i class="fab fa-bitcoin"></i>
++                    <div><strong>Bitcoin</strong><span>R$ ${Number(bitcoin.bid).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</span></div>
+                 </div>
+ 
+                 <div class="market-item">
+diff -ruN source_before_final/components/public-header.js source/components/public-header.js
+--- source_before_final/components/public-header.js	2026-06-24 06:19:51.000000000 +0000
++++ source/components/public-header.js	2026-06-24 06:27:37.887370160 +0000
+@@ -3,7 +3,8 @@
+ (function () {
+     'use strict';
+ 
+-    const LOGO_URL = 'https://i.imgur.com/9eZarki.png';
++    const LOGO_URL = 'assets/logo-tem-no-entorno-sul.png';
++    const LOGO_FALLBACK = 'https://i.imgur.com/9eZarki.png';
+ 
+     function getClient() {
+         return window.supabaseClient || null;
+@@ -248,7 +249,7 @@
+             <header class="public-header">
+                 <div class="public-header-container">
+                     <a href="index.html" class="public-brand">
+-                        <img src="${LOGO_URL}" alt="Tem no Entorno Sul">
++                        <img src="${LOGO_URL}" onerror="this.onerror=null;this.src='${LOGO_FALLBACK}'" alt="Tem no Entorno Sul">
+                     </a>
+ 
+                     <button id="publicMenuBtn" class="public-menu-btn" type="button" aria-label="Abrir menu">
+@@ -309,4 +310,4 @@
+     }
+ 
+     document.addEventListener('DOMContentLoaded', renderHeader);
+-})();
+\ No newline at end of file
++})();
+diff -ruN source_before_final/comunidade.html source/comunidade.html
+--- source_before_final/comunidade.html	2026-06-24 06:19:51.000000000 +0000
++++ source/comunidade.html	2026-06-24 06:27:37.847557097 +0000
+@@ -2,15 +2,6 @@
+ <html lang="pt-BR">
+ 
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -164,14 +155,14 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ 
+ <script src="js/comunidade.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ 
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/docs/AUDITORIA-TECNICA-2026-06-24.md source/docs/AUDITORIA-TECNICA-2026-06-24.md
+--- source_before_final/docs/AUDITORIA-TECNICA-2026-06-24.md	1970-01-01 00:00:00.000000000 +0000
++++ source/docs/AUDITORIA-TECNICA-2026-06-24.md	2026-06-24 06:36:25.590598724 +0000
+@@ -0,0 +1,33 @@
++# Auditoria técnica — 24 de junho de 2026
++
++## Correções incluídas neste pacote
++
++- Google Analytics removido do carregamento automático dos arquivos HTML.
++- GA4 e Analytics interno passam a depender de consentimento explícito.
++- Banner de privacidade revisado, responsivo e com alteração posterior das preferências.
++- Metadados da página inicial corrigidos para o domínio oficial.
++- Logotipo local usado como fonte principal do cabeçalho.
++- Indicadores do rodapé corrigidos para exibir apenas cotações realmente fornecidas pela API.
++- Rastreamento de impressões e cliques publicitários condicionado ao consentimento.
++- Redirecionamento do login protegido contra URLs externas e esquemas perigosos.
++- Alteração de papel de usuário feita sem apagar previamente todas as permissões.
++- Cliente sem acesso administrativo é redirecionado sem ter a sessão encerrada.
++- Campo de valor de evento validado para evitar texto em coluna numérica.
++- Respostas LGPD pelo WhatsApp agora exigem confirmação manual de envio.
++- Endpoint de compartilhamento reforçado com validação, fallback e `noindex`.
++- Cabeçalhos de segurança e de não indexação da área administrativa reforçados.
++- Arquivos duplicados e componentes sem referência ativa removidos.
++
++## Limites da correção
++
++As seguintes etapas dependem dos resultados reais do Supabase e não foram aplicadas por suposição:
++
++1. Revisão e alteração das policies RLS.
++2. Restrições definitivas de unicidade para perfil e slug.
++3. Assinaturas e permissões das RPCs de convite e remoção.
++4. Configuração de SMTP e confirmação de e-mail.
++5. Migration de eventos gratuitos/pagos.
++6. Retenção de logs e anonimização LGPD.
++7. Exclusão de usuários e dados de teste.
++
++Execute `supabase/auditoria-somente-leitura.sql` no SQL Editor e revise os resultados antes de qualquer migration.
+diff -ruN source_before_final/docs/CHECKLIST-HOMOLOGACAO.md source/docs/CHECKLIST-HOMOLOGACAO.md
+--- source_before_final/docs/CHECKLIST-HOMOLOGACAO.md	1970-01-01 00:00:00.000000000 +0000
++++ source/docs/CHECKLIST-HOMOLOGACAO.md	2026-06-24 06:26:42.876143726 +0000
+@@ -0,0 +1,44 @@
++# Checklist de homologação
++
++## Perfis
++
++- [ ] Visitante anônimo
++- [ ] Cliente
++- [ ] Colunista
++- [ ] Comerciante
++- [ ] Administrador
++
++## Fluxos críticos
++
++- [ ] Cadastro e confirmação de e-mail
++- [ ] Login, logout e recuperação de senha
++- [ ] Aceite de convite para cada perfil
++- [ ] Edição do perfil único
++- [ ] Publicações, categorias e slugs
++- [ ] Eventos gratuitos e pagos
++- [ ] Parceiros e geolocalização
++- [ ] Comunidade, respostas e moderação
++- [ ] Favoritos, pontos e ranking
++- [ ] Publicidade
++- [ ] Solicitação de remoção, protocolo e confirmação de resposta
++- [ ] Logs de segurança
++- [ ] Aniversariantes
++- [ ] Consentimento de cookies e GA4
++- [ ] Compartilhamento com título, descrição e imagem
++
++## Navegadores
++
++- [ ] Chrome Android
++- [ ] Samsung Internet
++- [ ] Brave
++- [ ] Edge
++- [ ] Safari iOS/macOS
++- [ ] Firefox
++
++## Critérios de aceite
++
++- Nenhum erro bloqueador no console.
++- Nenhuma requisição não autorizada pelo perfil.
++- Nenhum menu administrativo exposto indevidamente.
++- Nenhum Analytics carregado antes do consentimento.
++- Todas as páginas públicas com navegação, rodapé e layout responsivo.
+diff -ruN source_before_final/docs/STATUS-GITHUB-E-IMPLANTACAO.md source/docs/STATUS-GITHUB-E-IMPLANTACAO.md
+--- source_before_final/docs/STATUS-GITHUB-E-IMPLANTACAO.md	1970-01-01 00:00:00.000000000 +0000
++++ source/docs/STATUS-GITHUB-E-IMPLANTACAO.md	2026-06-24 06:36:23.887514115 +0000
+@@ -0,0 +1,45 @@
++# Status da auditoria e implantação
++
++## Repositório
++
++- Repositório: `temdigital/temnoentornosul`
++- Branch de trabalho: `auditoria-portal-20260624`
++- Pull request: `#1 — Auditoria e correções estruturais do portal`
++
++## Alterações aplicadas na branch
++
++- Consentimento de cookies e carregamento condicionado do Google Analytics.
++- Analytics interno condicionado ao consentimento.
++- SEO e metadados oficiais da página inicial.
++- Cabeçalhos de segurança no `vercel.json`.
++- Remoção do logotipo duplicado.
++- Remoção do arquivo HTML acidental dentro da pasta `js`.
++- Remoção do componente de mídia não utilizado.
++- Documentos de auditoria e homologação.
++
++## Alterações incluídas neste pacote completo
++
++Além das mudanças já aplicadas na branch, este pacote contém:
++
++- Remoção do carregamento direto do GA4 em todas as páginas públicas e administrativas.
++- Inclusão uniforme de consentimento e Analytics nas páginas públicas.
++- Correção do cabeçalho para usar o logotipo local.
++- Correção das cotações exibidas no rodapé.
++- Métricas de publicidade condicionadas ao consentimento.
++- Proteção do redirecionamento após login.
++- Mensagem de cadastro compatível com confirmação de e-mail ativada ou desativada.
++- Alteração segura de papel de usuário.
++- Validação de valores de eventos.
++- Confirmação manual do envio LGPD pelo WhatsApp.
++- Reforço do endpoint de compartilhamento.
++- Remoção de arquivos duplicados e legados sem referência ativa.
++- SQL de auditoria somente leitura do Supabase.
++
++## Implantação segura
++
++1. Faça backup da branch principal.
++2. Compare este pacote com a branch `auditoria-portal-20260624`.
++3. Não execute migrations de banco sem rodar primeiro `supabase/auditoria-somente-leitura.sql`.
++4. Teste os cinco perfis conforme `docs/CHECKLIST-HOMOLOGACAO.md`.
++5. Valide o preview da Vercel.
++6. Somente depois faça merge para `main`.
+diff -ruN source_before_final/evento.html source/evento.html
+--- source_before_final/evento.html	2026-06-24 06:19:51.000000000 +0000
++++ source/evento.html	2026-06-24 06:27:37.844345218 +0000
+@@ -2,15 +2,6 @@
+ <html lang="pt-BR">
+ 
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -57,8 +48,7 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ 
+@@ -66,6 +56,7 @@
+ <script src="js/evento.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ 
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/eventos.html source/eventos.html
+--- source_before_final/eventos.html	2026-06-24 06:19:51.000000000 +0000
++++ source/eventos.html	2026-06-24 06:27:37.839113906 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -126,12 +117,12 @@
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="js/supabase-config.js"></script>
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ <script src="js/eventos.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/favoritos.html source/favoritos.html
+--- source_before_final/favoritos.html	2026-06-24 06:19:51.000000000 +0000
++++ source/favoritos.html	2026-06-24 06:27:37.836439333 +0000
+@@ -2,15 +2,6 @@
+ <html lang="pt-BR">
+ 
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -155,14 +146,14 @@
+     <script src="js/supabase-config.js"></script>
+ 
+     <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+     <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ 
+     <script src="js/favoritos.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ 
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/index.html source/index.html
+--- source_before_final/index.html	2026-06-24 06:19:51.000000000 +0000
++++ source/index.html	2026-06-24 06:27:37.848377303 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta
+@@ -19,6 +10,8 @@
+ 
+     <title>Tem no Entorno Sul - Sua região em um só lugar</title>
+ 
++    <link rel="canonical" href="https://www.temnoentornosul.com.br/">
++
+     <meta name="description" content="Notícias, eventos e informações relevantes do Entorno Sul. Conectamos você ao comércio local e à cultura regional.">
+     <meta name="keywords" content="notícias, eventos, comércio local, Entorno Sul, Valparaíso de Goiás, Novo Gama, Cidade Ocidental, Luziânia">
+     <meta name="author" content="Tem no Entorno Sul">
+@@ -26,13 +19,21 @@
+     <meta name="theme-color" content="#216c39">
+ 
+     <meta property="og:type" content="website">
+-    <meta property="og:url" content="https://temnoentornosul.vercel.app/">
++    <meta property="og:url" content="https://www.temnoentornosul.com.br/">
+     <meta property="og:title" content="Tem no Entorno Sul - Sua região em um só lugar">
+     <meta property="og:description" content="Notícias, eventos, empresas e informações relevantes do Entorno Sul.">
+-    <meta property="og:image" content="https://i.imgur.com/WVSr0qr.png">
++    <meta property="og:image" content="https://www.temnoentornosul.com.br/assets/logo-tem-no-entorno-sul.png">
++    <meta property="og:image:secure_url" content="https://www.temnoentornosul.com.br/assets/logo-tem-no-entorno-sul.png">
++    <meta property="og:image:alt" content="Tem no Entorno Sul">
++    <meta property="og:site_name" content="Tem no Entorno Sul">
++    <meta property="og:locale" content="pt_BR">
++    <meta name="twitter:card" content="summary_large_image">
++    <meta name="twitter:title" content="Tem no Entorno Sul - Sua região em um só lugar">
++    <meta name="twitter:description" content="Notícias, eventos, empresas e informações relevantes do Entorno Sul.">
++    <meta name="twitter:image" content="https://www.temnoentornosul.com.br/assets/logo-tem-no-entorno-sul.png">
+ 
+-    <link rel="icon" type="image/png" href="https://i.imgur.com/WVSr0qr.png">
+-    <link rel="apple-touch-icon" href="https://i.imgur.com/WVSr0qr.png">
++    <link rel="icon" type="image/png" href="assets/logo-tem-no-entorno-sul.png">
++    <link rel="apple-touch-icon" href="assets/logo-tem-no-entorno-sul.png">
+ 
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+ 
+@@ -177,5 +178,8 @@
+ <script src="components/public-footer.js"></script>
+ <script src="index.js"></script>
+ 
++
++    <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/js/auth-cadastro.js source/js/auth-cadastro.js
+--- source_before_final/js/auth-cadastro.js	2026-06-24 06:19:51.000000000 +0000
++++ source/js/auth-cadastro.js	2026-06-24 06:27:37.929952803 +0000
+@@ -230,14 +230,25 @@
+                 throw new Error('Cadastro não retornou usuário.');
+             }
+ 
+-            showMessage(
+-                `Conta criada com sucesso. Enviamos um e-mail de confirmação para ${email}. Abra sua caixa de entrada, confirme o cadastro e depois entre usando a senha cadastrada.`,
+-                'success'
+-            );
+-
+             document.getElementById('cadastroForm')?.reset();
+             syncBirthDate();
+ 
++            if (data.session) {
++                showMessage(
++                    'Conta criada e ativada com sucesso. Você será direcionado ao seu perfil.',
++                    'success'
++                );
++
++                window.setTimeout(() => {
++                    window.location.href = 'perfil.html';
++                }, 1200);
++            } else {
++                showMessage(
++                    `Conta criada com sucesso. Enviamos um e-mail de confirmação para ${email}. Abra sua caixa de entrada, confirme o cadastro e depois entre usando a senha cadastrada.`,
++                    'success'
++                );
++            }
++
+         } catch (error) {
+             console.error('[AUTH CADASTRO]', error);
+             showMessage(getErrorMessage(error), 'error');
+diff -ruN source_before_final/js/auth-login.js source/js/auth-login.js
+--- source_before_final/js/auth-login.js	2026-06-24 06:19:51.000000000 +0000
++++ source/js/auth-login.js	2026-06-24 06:27:37.940988557 +0000
+@@ -15,15 +15,22 @@
+             return 'perfil.html';
+         }
+ 
+-        if (
+-            redirect.startsWith('http://') ||
+-            redirect.startsWith('https://') ||
+-            redirect.startsWith('//')
+-        ) {
++        try {
++            const candidate = new URL(redirect, window.location.origin);
++
++            if (candidate.origin !== window.location.origin) {
++                return 'perfil.html';
++            }
++
++            if (!['http:', 'https:'].includes(candidate.protocol)) {
++                return 'perfil.html';
++            }
++
++            const safePath = `${candidate.pathname}${candidate.search}${candidate.hash}`;
++            return safePath.startsWith('/') ? safePath : 'perfil.html';
++        } catch {
+             return 'perfil.html';
+         }
+-
+-        return redirect;
+     }
+ 
+     function setLoading(isLoading) {
+@@ -159,4 +166,4 @@
+             showMessage('E-mail confirmado. Agora entre com seu e-mail e senha.', 'success');
+         }
+     });
+-})();
+\ No newline at end of file
++})();
+diff -ruN source_before_final/js/parceiro.html source/js/parceiro.html
+--- source_before_final/js/parceiro.html	2026-06-24 06:19:51.000000000 +0000
++++ source/js/parceiro.html	1970-01-01 00:00:00.000000000 +0000
+@@ -1,587 +0,0 @@
+-// js/parceiro.js
+-
+-(function () {
+-    'use strict';
+-
+-    function getClient() {
+-        return window.supabaseClient || window.supabase?.client || null;
+-    }
+-
+-    function getSlug() {
+-        const params = new URLSearchParams(window.location.search);
+-        return String(params.get('slug') || '').trim();
+-    }
+-
+-    function escapeHTML(value) {
+-        return String(value ?? '')
+-            .replaceAll('&', '&amp;')
+-            .replaceAll('<', '&lt;')
+-            .replaceAll('>', '&gt;')
+-            .replaceAll('"', '&quot;')
+-            .replaceAll("'", '&#039;');
+-    }
+-
+-    function stripHTML(value) {
+-        const div = document.createElement('div');
+-        div.innerHTML = String(value || '');
+-        return div.textContent || div.innerText || '';
+-    }
+-
+-    function setMeta(parceiro) {
+-        document.title = `${parceiro.nome} | Tem no Entorno Sul`;
+-
+-        const description =
+-            stripHTML(parceiro.descricao || '')
+-                .substring(0, 160) ||
+-            parceiro.nome;
+-
+-        const metaDescription =
+-            document.querySelector('meta[name="description"]');
+-
+-        if (metaDescription) {
+-            metaDescription.setAttribute('content', description);
+-        }
+-    }
+-
+-    function buildMapUrl(latitude, longitude) {
+-        if (!latitude || !longitude) return '';
+-        return `https://www.google.com/maps?q=${latitude},${longitude}`;
+-    }
+-
+-    function buildEmbedMap(latitude, longitude) {
+-        if (!latitude || !longitude) return '';
+-        return `https://www.google.com/maps?q=${latitude},${longitude}&output=embed`;
+-    }
+-
+-    function renderError(message) {
+-        document.getElementById('parceiroRoot').innerHTML = `
+-            <section class="error-state">
+-                <i class="fas fa-triangle-exclamation"></i>
+-
+-                <h1>Empresa não encontrada</h1>
+-
+-                <p>${escapeHTML(message)}</p>
+-
+-                <a href="parceiros.html" class="header-btn">
+-                    <i class="fas fa-arrow-left"></i>
+-                    Voltar às empresas
+-                </a>
+-            </section>
+-        `;
+-    }
+-
+-    function shareWhatsapp(parceiro) {
+-        const text =
+-            `${parceiro.nome}\n\n${window.location.href}`;
+-
+-        window.open(
+-            `https://wa.me/?text=${encodeURIComponent(text)}`,
+-            '_blank'
+-        );
+-    }
+-
+-    function shareFacebook() {
+-        window.open(
+-            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
+-            '_blank'
+-        );
+-    }
+-
+-    async function copyLink() {
+-        try {
+-            await navigator.clipboard.writeText(window.location.href);
+-            alert('Link copiado com sucesso.');
+-        } catch {
+-            alert('Não foi possível copiar o link.');
+-        }
+-    }
+-
+-    function socialButton(icon, text, url) {
+-        if (!url) return '';
+-
+-        return `
+-            <a
+-                href="${escapeHTML(url)}"
+-                target="_blank"
+-                rel="noopener"
+-                class="action-btn light"
+-            >
+-                <i class="${icon}"></i>
+-                ${text}
+-            </a>
+-        `;
+-    }
+-
+-    async function loadRelated(parceiroAtual) {
+-        const client = getClient();
+-
+-        if (!client) return '';
+-
+-        try {
+-            const { data } = await client
+-                .from('v_negocios_publicos')
+-                .select('*')
+-                .neq('id', parceiroAtual.id)
+-                .limit(3);
+-
+-            if (!data?.length) return '';
+-
+-            return `
+-                <section class="related-section">
+-
+-                    <div class="container">
+-
+-                        <h2 class="related-title">
+-                            Outras empresas parceiras
+-                        </h2>
+-
+-                        <div class="related-grid">
+-
+-                            ${data.map(item => `
+-                                <article class="related-card">
+-
+-                                    ${
+-                                        item.imagem_capa_url
+-                                            ? `
+-                                                <img
+-                                                    src="${escapeHTML(item.imagem_capa_url)}"
+-                                                    alt="${escapeHTML(item.nome)}"
+-                                                >
+-                                            `
+-                                            : `
+-                                                <div class="related-placeholder">
+-                                                    <i class="fas fa-store"></i>
+-                                                </div>
+-                                            `
+-                                    }
+-
+-                                    <div class="related-body">
+-
+-                                        <h3>
+-                                            ${escapeHTML(item.nome)}
+-                                        </h3>
+-
+-                                        <p>
+-                                            ${escapeHTML(
+-                                                stripHTML(item.descricao || '')
+-                                                    .substring(0, 90)
+-                                            )}...
+-                                        </p>
+-
+-                                        <a href="parceiro.html?slug=${encodeURIComponent(item.slug)}">
+-                                            Ver empresa →
+-                                        </a>
+-
+-                                    </div>
+-
+-                                </article>
+-                            `).join('')}
+-
+-                        </div>
+-
+-                    </div>
+-
+-                </section>
+-            `;
+-
+-        } catch {
+-            return '';
+-        }
+-    }
+-
+-    async function renderParceiro(parceiro) {
+-        setMeta(parceiro);
+-
+-        const relatedHtml =
+-            await loadRelated(parceiro);
+-
+-        const mapEmbed =
+-            buildEmbedMap(
+-                parceiro.latitude,
+-                parceiro.longitude
+-            );
+-
+-        const mapLink =
+-            buildMapUrl(
+-                parceiro.latitude,
+-                parceiro.longitude
+-            );
+-
+-        const logo =
+-            parceiro.imagem_logo_url;
+-
+-        const capa =
+-            parceiro.imagem_capa_url;
+-
+-        const categoria =
+-            parceiro.tipo_negocio_nome ||
+-            parceiro.categoria_principal ||
+-            'Empresa Parceira';
+-
+-        document.getElementById('parceiroRoot').innerHTML = `
+-            <section class="partner-page">
+-
+-                <div class="container">
+-
+-                    <article class="partner-card">
+-
+-                        ${
+-                            capa
+-                                ? `
+-                                    <img
+-                                        class="partner-cover"
+-                                        src="${escapeHTML(capa)}"
+-                                        alt="${escapeHTML(parceiro.nome)}"
+-                                    >
+-                                `
+-                                : ''
+-                        }
+-
+-                        <div class="partner-content">
+-
+-                            <div class="partner-header">
+-
+-                                ${
+-                                    logo
+-                                        ? `
+-                                            <img
+-                                                class="partner-logo"
+-                                                src="${escapeHTML(logo)}"
+-                                                alt="${escapeHTML(parceiro.nome)}"
+-                                            >
+-                                        `
+-                                        : `
+-                                            <div class="partner-initial">
+-                                                ${escapeHTML(
+-                                                    parceiro.nome.charAt(0)
+-                                                )}
+-                                            </div>
+-                                        `
+-                                }
+-
+-                                <div class="partner-title-box">
+-
+-                                    <div class="partner-kicker">
+-
+-                                        <i class="fas fa-store"></i>
+-
+-                                        ${escapeHTML(categoria)}
+-
+-                                    </div>
+-
+-                                    <h1 class="partner-title">
+-
+-                                        ${escapeHTML(parceiro.nome)}
+-
+-                                        ${
+-                                            parceiro.verificado
+-                                                ? `
+-                                                    <i
+-                                                        class="fas fa-circle-check verified-icon"
+-                                                        title="Empresa verificada"
+-                                                    ></i>
+-                                                `
+-                                                : ''
+-                                        }
+-
+-                                    </h1>
+-
+-                                    <p class="partner-subtitle">
+-
+-                                        ${
+-                                            parceiro.contato_negocio ||
+-                                            parceiro.responsavel ||
+-                                            'Empresa parceira do Tem no Entorno Sul'
+-                                        }
+-
+-                                    </p>
+-
+-                                </div>
+-
+-                            </div>
+-
+-                            <div class="partner-summary">
+-
+-                                <div class="summary-item">
+-                                    <i class="fas fa-tag"></i>
+-
+-                                    <div>
+-                                        <span>Categoria</span>
+-
+-                                        <strong>
+-                                            ${escapeHTML(categoria)}
+-                                        </strong>
+-                                    </div>
+-                                </div>
+-
+-                                <div class="summary-item">
+-                                    <i class="fas fa-location-dot"></i>
+-
+-                                    <div>
+-                                        <span>Localização</span>
+-
+-                                        <strong>
+-                                            ${escapeHTML(
+-                                                [
+-                                                    parceiro.endereco_texto,
+-                                                    parceiro.bairro,
+-                                                    parceiro.cidade
+-                                                ]
+-                                                .filter(Boolean)
+-                                                .join(' • ')
+-                                            ) || 'Não informado'}
+-                                        </strong>
+-                                    </div>
+-                                </div>
+-
+-                                <div class="summary-item">
+-                                    <i class="fas fa-crown"></i>
+-
+-                                    <div>
+-                                        <span>Plano</span>
+-
+-                                        <strong>
+-                                            ${escapeHTML(
+-                                                parceiro.plano || 'Padrão'
+-                                            )}
+-                                        </strong>
+-                                    </div>
+-                                </div>
+-
+-                                <div class="summary-item">
+-                                    <i class="fas fa-user"></i>
+-
+-                                    <div>
+-                                        <span>Responsável</span>
+-
+-                                        <strong>
+-                                            ${escapeHTML(
+-                                                parceiro.responsavel ||
+-                                                'Não informado'
+-                                            )}
+-                                        </strong>
+-                                    </div>
+-                                </div>
+-
+-                            </div>
+-
+-                            <div class="partner-actions">
+-
+-                                ${
+-                                    parceiro.whatsapp_link
+-                                        ? `
+-                                            <a
+-                                                href="${escapeHTML(parceiro.whatsapp_link)}"
+-                                                target="_blank"
+-                                                class="action-btn"
+-                                            >
+-                                                <i class="fab fa-whatsapp"></i>
+-                                                WhatsApp
+-                                            </a>
+-                                        `
+-                                        : ''
+-                                }
+-
+-                                ${
+-                                    parceiro.site
+-                                        ? `
+-                                            <a
+-                                                href="${escapeHTML(parceiro.site)}"
+-                                                target="_blank"
+-                                                class="action-btn secondary"
+-                                            >
+-                                                <i class="fas fa-globe"></i>
+-                                                Site
+-                                            </a>
+-                                        `
+-                                        : ''
+-                                }
+-
+-                                ${
+-                                    mapLink
+-                                        ? `
+-                                            <a
+-                                                href="${escapeHTML(mapLink)}"
+-                                                target="_blank"
+-                                                class="action-btn secondary"
+-                                            >
+-                                                <i class="fas fa-route"></i>
+-                                                Como chegar
+-                                            </a>
+-                                        `
+-                                        : ''
+-                                }
+-
+-                                <button
+-                                    id="shareWhatsappBtn"
+-                                    class="action-btn light"
+-                                >
+-                                    <i class="fab fa-whatsapp"></i>
+-                                    Compartilhar
+-                                </button>
+-
+-                                <button
+-                                    id="shareFacebookBtn"
+-                                    class="action-btn light"
+-                                >
+-                                    <i class="fab fa-facebook"></i>
+-                                    Facebook
+-                                </button>
+-
+-                                <button
+-                                    id="copyLinkBtn"
+-                                    class="action-btn light"
+-                                >
+-                                    <i class="fas fa-link"></i>
+-                                    Copiar link
+-                                </button>
+-
+-                            </div>
+-
+-                            <div class="partner-actions">
+-
+-                                ${socialButton(
+-                                    'fab fa-instagram',
+-                                    'Instagram',
+-                                    parceiro.instagram
+-                                )}
+-
+-                                ${socialButton(
+-                                    'fab fa-facebook',
+-                                    'Facebook',
+-                                    parceiro.facebook
+-                                )}
+-
+-                                ${socialButton(
+-                                    'fab fa-youtube',
+-                                    'YouTube',
+-                                    parceiro.youtube
+-                                )}
+-
+-                                ${socialButton(
+-                                    'fab fa-tiktok',
+-                                    'TikTok',
+-                                    parceiro.tiktok
+-                                )}
+-
+-                            </div>
+-
+-                            ${
+-                                mapEmbed
+-                                    ? `
+-                                        <section class="map-section">
+-
+-                                            <h2 class="map-title">
+-                                                Localização
+-                                            </h2>
+-
+-                                            <div class="map-box">
+-
+-                                                <iframe
+-                                                    src="${escapeHTML(mapEmbed)}"
+-                                                    loading="lazy"
+-                                                    referrerpolicy="no-referrer-when-downgrade"
+-                                                ></iframe>
+-
+-                                            </div>
+-
+-                                        </section>
+-                                    `
+-                                    : ''
+-                            }
+-
+-                            <div class="partner-description">
+-
+-                                ${
+-                                    parceiro.descricao ||
+-                                    '<p>Descrição não informada.</p>'
+-                                }
+-
+-                            </div>
+-
+-                        </div>
+-
+-                    </article>
+-
+-                </div>
+-
+-                ${relatedHtml}
+-
+-            </section>
+-        `;
+-
+-        document
+-            .getElementById('shareWhatsappBtn')
+-            ?.addEventListener(
+-                'click',
+-                () => shareWhatsapp(parceiro)
+-            );
+-
+-        document
+-            .getElementById('shareFacebookBtn')
+-            ?.addEventListener(
+-                'click',
+-                shareFacebook
+-            );
+-
+-        document
+-            .getElementById('copyLinkBtn')
+-            ?.addEventListener(
+-                'click',
+-                copyLink
+-            );
+-    }
+-
+-    async function loadParceiro() {
+-        const slug = getSlug();
+-
+-        if (!slug) {
+-            renderError(
+-                'Slug da empresa não informado.'
+-            );
+-            return;
+-        }
+-
+-        const client = getClient();
+-
+-        if (!client) {
+-            renderError(
+-                'Supabase não encontrado.'
+-            );
+-            return;
+-        }
+-
+-        try {
+-            const { data, error } = await client
+-                .from('v_negocios_publicos')
+-                .select('*')
+-                .eq('slug', slug)
+-                .maybeSingle();
+-
+-            if (error) throw error;
+-
+-            if (!data) {
+-                renderError(
+-                    'Empresa não encontrada.'
+-                );
+-                return;
+-            }
+-
+-            await renderParceiro(data);
+-
+-        } catch (error) {
+-            console.error(error);
+-
+-            renderError(
+-                error.message ||
+-                'Erro ao carregar empresa.'
+-            );
+-        }
+-    }
+-
+-    document.addEventListener(
+-        'DOMContentLoaded',
+-        loadParceiro
+-    );
+-
+-})();
+\ No newline at end of file
+diff -ruN source_before_final/login.html source/login.html
+--- source_before_final/login.html	2026-06-24 06:19:51.000000000 +0000
++++ source/login.html	2026-06-24 06:27:37.835457244 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -81,12 +72,12 @@
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="js/supabase-config.js"></script>
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ <script src="js/auth-login.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/pages/cadastro.html source/pages/cadastro.html
+--- source_before_final/pages/cadastro.html	2026-06-24 06:19:51.000000000 +0000
++++ source/pages/cadastro.html	1970-01-01 00:00:00.000000000 +0000
+@@ -1,156 +0,0 @@
+-<!DOCTYPE html>
+-<html lang="pt-BR">
+-<head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+-    <meta charset="UTF-8">
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+-    <title>Cadastro - Tem no Entorno Sul</title>
+-    <link rel="icon" type="image/png" href="https://i.imgur.com/WVSr0qr.png">
+-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+-    <style>
+-        * { margin: 0; padding: 0; box-sizing: border-box; }
+-        body {
+-            font-family: 'Roboto', sans-serif;
+-            background: linear-gradient(135deg, #216b39 0%, #f2c585 100%);
+-            min-height: 100vh;
+-            padding: 40px 20px;
+-        }
+-        .container { max-width: 600px; margin: 0 auto; }
+-        .card {
+-            background: white;
+-            border-radius: 20px;
+-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+-            padding: 40px;
+-            animation: fadeIn 0.5s ease;
+-        }
+-        .logo { text-align: center; margin-bottom: 30px; }
+-        .logo img { height: 60px; width: auto; }
+-        h1 { color: #216b39; text-align: center; font-size: 1.8rem; margin-bottom: 10px; }
+-        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+-        .form-group { margin-bottom: 20px; }
+-        label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+-        label i { color: #216b39; margin-right: 8px; }
+-        input, select {
+-            width: 100%;
+-            padding: 12px 15px;
+-            border: 1px solid #ddd;
+-            border-radius: 10px;
+-            font-size: 1rem;
+-            transition: all 0.3s;
+-            font-family: inherit;
+-        }
+-        input:focus, select:focus {
+-            outline: none;
+-            border-color: #216b39;
+-            box-shadow: 0 0 0 3px rgba(33,107,57,0.1);
+-        }
+-        .btn-cadastrar {
+-            width: 100%;
+-            background: #216b39;
+-            color: white;
+-            border: none;
+-            padding: 14px;
+-            border-radius: 50px;
+-            font-size: 1rem;
+-            font-weight: 600;
+-            cursor: pointer;
+-            transition: all 0.3s;
+-            margin-top: 10px;
+-        }
+-        .btn-cadastrar:hover { background: #1a5930; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+-        .btn-cadastrar:disabled { background: #91b69d; cursor: not-allowed; transform: none; }
+-        .message {
+-            padding: 12px;
+-            border-radius: 10px;
+-            margin-bottom: 20px;
+-            font-size: 0.9rem;
+-            text-align: center;
+-            display: none;
+-        }
+-        .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+-        .message.error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+-        .message.show { display: block; }
+-        .info-text { font-size: 0.85rem; color: #666; text-align: center; margin-top: 20px; }
+-        .info-text a { color: #216b39; text-decoration: none; }
+-        @keyframes fadeIn {
+-            from { opacity: 0; transform: translateY(20px); }
+-            to { opacity: 1; transform: translateY(0); }
+-        }
+-        @media (max-width: 576px) {
+-            .card { padding: 25px; }
+-            h1 { font-size: 1.5rem; }
+-        }
+-    </style>
+-</head>
+-<body>
+-    <div class="container">
+-        <div class="card">
+-            <div class="logo">
+-                <img src="https://i.imgur.com/WVSr0qr.png" alt="Tem no Entorno Sul">
+-            </div>
+-            <h1>Criar conta</h1>
+-            <p class="subtitle">Cadastre-se e faça parte da nossa comunidade</p>
+-
+-            <div id="message" class="message"></div>
+-
+-            <form id="cadastroForm">
+-                <div class="form-group">
+-                    <label><i class="fas fa-user"></i> Nome completo *</label>
+-                    <input type="text" id="nome" placeholder="Seu nome completo" required>
+-                </div>
+-                <div class="form-group">
+-                    <label><i class="fas fa-envelope"></i> E-mail *</label>
+-                    <input type="email" id="email" placeholder="seu@email.com" required>
+-                </div>
+-                <div class="form-group">
+-                    <label><i class="fas fa-cake-candles"></i> Data de nascimento *</label>
+-                    <input type="date" id="dataNascimento" required>
+-                </div>
+-                <div class="form-group">
+-                    <label><i class="fas fa-phone"></i> WhatsApp</label>
+-                    <input type="tel" id="whatsapp" placeholder="(61) 99999-9999">
+-                </div>
+-                <div class="form-group">
+-                    <label><i class="fas fa-lock"></i> Senha *</label>
+-                    <input type="password" id="senha" placeholder="••••••••" required>
+-                </div>
+-                <div class="form-group">
+-                    <label><i class="fas fa-lock"></i> Confirmar senha *</label>
+-                    <input type="password" id="confirmarSenha" placeholder="••••••••" required>
+-                </div>
+-                <div class="form-group">
+-                    <label><i class="fas fa-user-tag"></i> Tipo de conta *</label>
+-                    <select id="tipoUsuario" required>
+-                        <option value="">Selecione...</option>
+-                        <option value="cliente">👤 Cliente</option>
+-                        <option value="comerciante">🏪 Comerciante</option>
+-                        <option value="colunista">📝 Colunista</option>
+-                        <option value="admin">👑 Administrador</option>
+-                    </select>
+-                </div>
+-                <button type="submit" class="btn-cadastrar" id="submitBtn">
+-                    <i class="fas fa-user-plus"></i> Cadastrar
+-                </button>
+-            </form>
+-
+-            <div class="info-text">
+-                Já tem uma conta? <a href="../admin/login.html">Fazer login</a><br>
+-                <small>Ao cadastrar, você concorda com nossos <a href="#">Termos de Uso</a>.</small>
+-            </div>
+-        </div>
+-    </div>
+-
+-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+-    <script src="../js/supabase-config.js"></script>
+-    <script src="cadastro.js"></script>
+-</body>
+-</html>
+\ No newline at end of file
+diff -ruN source_before_final/pages/cadastro.js source/pages/cadastro.js
+--- source_before_final/pages/cadastro.js	2026-06-24 06:19:51.000000000 +0000
++++ source/pages/cadastro.js	1970-01-01 00:00:00.000000000 +0000
+@@ -1,141 +0,0 @@
+-// pages/cadastro.js
+-document.addEventListener('DOMContentLoaded', async () => {
+-    console.log('🔍 Página de cadastro carregada');
+-
+-    if (!window.supabaseClient) {
+-        console.error('❌ Supabase client não disponível');
+-        document.getElementById('message').innerHTML = 'Erro de configuração. Contate o administrador.';
+-        document.getElementById('message').classList.add('show', 'error');
+-        return;
+-    }
+-
+-    // Mapeamento dos tipos para os IDs corretos (baseado no seu banco)
+-    const roleIdMap = {
+-        'admin': 5,
+-        'colunista': 6,
+-        'comerciante': 7,
+-        'cliente': 8
+-    };
+-
+-    document.getElementById('cadastroForm').addEventListener('submit', async (e) => {
+-        e.preventDefault();
+-
+-        const nome = document.getElementById('nome').value.trim();
+-        const email = document.getElementById('email').value.trim();
+-        const whatsapp = document.getElementById('whatsapp').value.trim();
+-        const dataNascimento = document.getElementById('dataNascimento')?.value || '';
+-        const senha = document.getElementById('senha').value;
+-        const confirmarSenha = document.getElementById('confirmarSenha').value;
+-        const tipoUsuario = document.getElementById('tipoUsuario').value;
+-
+-        const messageDiv = document.getElementById('message');
+-        const submitBtn = document.getElementById('submitBtn');
+-
+-        messageDiv.classList.remove('show', 'success', 'error');
+-
+-        if (!nome || !email || !dataNascimento || !senha || !tipoUsuario) {
+-            messageDiv.textContent = 'Preencha todos os campos obrigatórios, incluindo a data de nascimento.';
+-            messageDiv.classList.add('show', 'error');
+-            return;
+-        }
+-
+-        if (senha !== confirmarSenha) {
+-            messageDiv.textContent = 'As senhas não coincidem.';
+-            messageDiv.classList.add('show', 'error');
+-            return;
+-        }
+-
+-        if (senha.length < 6) {
+-            messageDiv.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+-            messageDiv.classList.add('show', 'error');
+-            return;
+-        }
+-
+-        const roleId = roleIdMap[tipoUsuario];
+-        if (!roleId) {
+-            messageDiv.textContent = 'Tipo de usuário inválido.';
+-            messageDiv.classList.add('show', 'error');
+-            return;
+-        }
+-
+-        submitBtn.disabled = true;
+-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cadastrando...';
+-
+-        try {
+-            // 1. Criar usuário no Supabase Auth
+-            const { data: authData, error: authError } = await window.supabaseClient.auth.signUp({
+-                email,
+-                password: senha,
+-                options: {
+-                    data: {
+-                        nome: nome,
+-                        whatsapp: whatsapp,
+-                        data_nascimento: dataNascimento
+-                    }
+-                }
+-            });
+-
+-            if (authError) throw authError;
+-            if (!authData.user) throw new Error('Usuário não foi criado.');
+-
+-            const userId = authData.user.id;
+-
+-            // 2. Inserir na tabela usuarios (após o usuário estar logado, o que pode não ocorrer imediatamente)
+-            // Precisamos aguardar a sessão ser estabelecida? O signUp não loga automaticamente; temos que usar o mesmo cliente.
+-            // Vamos tentar inserir usando o mesmo client (que já tem a sessão do usuário recém-criado? Não, signUp não cria sessão)
+-            // Alternativa: inserir usando a chave de serviço (não recomendado) ou usar uma Edge Function.
+-            // A solução mais simples é confiar que o RLS vai permitir INSERT com auth.uid() = id.
+-            // Para isso, precisamos que o usuário esteja autenticado. Vamos fazer login em seguida.
+-
+-            // Fazer login automaticamente após o cadastro (para obter a sessão)
+-            const { error: signInError } = await window.supabaseClient.auth.signInWithPassword({
+-                email,
+-                password: senha
+-            });
+-            if (signInError) throw signInError;
+-
+-            // Agora estamos autenticados, podemos inserir na tabela usuarios
+-            const { error: usuarioError } = await window.supabaseClient
+-                .from('usuarios')
+-                .insert({
+-                    id: userId,
+-                    nome: nome,
+-                    email: email,
+-                    whatsapp: whatsapp || null,
+-                    data_nascimento: dataNascimento || null,
+-                    status: 'ativo',
+-                    pontos: 0,
+-                    created_at: new Date(),
+-                    updated_at: new Date()
+-                });
+-
+-            if (usuarioError) throw usuarioError;
+-
+-            // 3. Inserir na tabela usuarios_roles
+-            const { error: roleError } = await window.supabaseClient
+-                .from('usuarios_roles')
+-                .insert({
+-                    usuario_id: userId,
+-                    role_id: roleId,
+-                    created_at: new Date()
+-                });
+-
+-            if (roleError) throw roleError;
+-
+-            messageDiv.textContent = `✅ Cadastro realizado com sucesso! Um e-mail de confirmação foi enviado para ${email}. Verifique sua caixa de entrada (e spam) e clique no link para ativar sua conta.`;
+-            messageDiv.classList.add('show', 'success');
+-            document.getElementById('cadastroForm').reset();
+-
+-            setTimeout(() => {
+-                window.location.href = '../admin/login.html';
+-            }, 5000);
+-
+-        } catch (err) {
+-            console.error('❌ Erro no cadastro:', err);
+-            messageDiv.textContent = err.message || 'Erro ao realizar cadastro. Tente novamente.';
+-            messageDiv.classList.add('show', 'error');
+-            submitBtn.disabled = false;
+-            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar';
+-        }
+-    });
+-});
+\ No newline at end of file
+diff -ruN source_before_final/parceiro.html source/parceiro.html
+--- source_before_final/parceiro.html	2026-06-24 06:19:51.000000000 +0000
++++ source/parceiro.html	2026-06-24 06:27:37.839993837 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -53,8 +44,7 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ 
+@@ -62,5 +52,6 @@
+ <script src="js/parceiro.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/parceiros.html source/parceiros.html
+--- source_before_final/parceiros.html	2026-06-24 06:19:51.000000000 +0000
++++ source/parceiros.html	2026-06-24 06:27:37.846041391 +0000
+@@ -2,15 +2,6 @@
+ <html lang="pt-BR">
+ 
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta
+@@ -259,8 +250,7 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ 
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+@@ -268,6 +258,7 @@
+ <script src="js/parceiros.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ 
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/perfil-publico.html source/perfil-publico.html
+--- source_before_final/perfil-publico.html	2026-06-24 06:19:51.000000000 +0000
++++ source/perfil-publico.html	2026-06-24 06:27:37.834391015 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -51,12 +42,12 @@
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="js/supabase-config.js"></script>
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ <script src="js/perfil-publico.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/perfil.html source/perfil.html
+--- source_before_final/perfil.html	2026-06-24 06:19:51.000000000 +0000
++++ source/perfil.html	2026-06-24 06:27:37.833822543 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -51,12 +42,12 @@
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="js/supabase-config.js"></script>
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ <script src="js/perfil.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/pontos.html source/pontos.html
+--- source_before_final/pontos.html	2026-06-24 06:19:51.000000000 +0000
++++ source/pontos.html	2026-06-24 06:27:37.851157057 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 
+@@ -99,6 +90,8 @@
+ <script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+-<script src="components/cookies.js"></script>
++
++    <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ </html>
+diff -ruN source_before_final/privacidade.html source/privacidade.html
+--- source_before_final/privacidade.html	2026-06-24 06:19:51.000000000 +0000
++++ source/privacidade.html	2026-06-24 06:27:37.842147352 +0000
+@@ -1,14 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Política de Privacidade | Tem no Entorno Sul</title>
+@@ -66,10 +58,11 @@
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="js/supabase-config.js"></script>
+ <script src="components/seo.js"></script>
+-<script src="components/analytics.js"></script>
+ <script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+-<script src="components/cookies.js"></script>
++
++    <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ </html>
+diff -ruN source_before_final/publicacao.html source/publicacao.html
+--- source_before_final/publicacao.html	2026-06-24 06:19:51.000000000 +0000
++++ source/publicacao.html	2026-06-24 06:27:37.849113536 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -50,8 +41,7 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ 
+@@ -59,5 +49,6 @@
+ <script src="js/publicacao.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/publicacoes.html source/publicacoes.html
+--- source_before_final/publicacoes.html	2026-06-24 06:19:51.000000000 +0000
++++ source/publicacoes.html	2026-06-24 06:27:37.849715656 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -105,12 +96,12 @@
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="js/supabase-config.js"></script>
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ <script src="js/publicacoes.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/ranking.html source/ranking.html
+--- source_before_final/ranking.html	2026-06-24 06:19:51.000000000 +0000
++++ source/ranking.html	2026-06-24 06:27:37.852742030 +0000
+@@ -2,15 +2,6 @@
+ <html lang="pt-BR">
+ 
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -116,14 +107,14 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ 
+ <script src="js/ranking.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ 
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/recuperar-senha.html source/recuperar-senha.html
+--- source_before_final/recuperar-senha.html	2026-06-24 06:19:51.000000000 +0000
++++ source/recuperar-senha.html	2026-06-24 06:27:37.843890988 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -76,12 +67,12 @@
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+ <script src="js/supabase-config.js"></script>
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+ <script src="js/auth-recuperar-senha.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/redefinir-senha.html source/redefinir-senha.html
+--- source_before_final/redefinir-senha.html	2026-06-24 06:19:51.000000000 +0000
++++ source/redefinir-senha.html	2026-06-24 06:27:37.845075966 +0000
+@@ -1,15 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+-
+     <meta charset="UTF-8">
+ 
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -129,8 +120,7 @@
+ <script src="js/supabase-config.js"></script>
+ 
+ <script src="components/seo.js"></script>
+-    <script src="components/analytics.js"></script>
+-    <script src="components/public-header.js"></script>
++<script src="components/public-header.js"></script>
+ 
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+@@ -138,5 +128,6 @@
+ <script src="js/auth-redefinir-senha.js"></script>
+ 
+     <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff -ruN source_before_final/remocao.html source/remocao.html
+--- source_before_final/remocao.html	2026-06-24 06:19:51.000000000 +0000
++++ source/remocao.html	2026-06-24 06:27:37.853446036 +0000
+@@ -1,14 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Solicitar Remoção | Tem no Entorno Sul</title>
+@@ -120,7 +112,9 @@
+ <script src="components/public-header.js"></script>
+ <script src="components/ad-slot.js"></script>
+ <script src="components/public-footer.js"></script>
+-<script src="components/cookies.js"></script>
+ <script src="js/remocao.js"></script>
++
++    <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body>
+ </html>
+diff -ruN source_before_final/supabase/auditoria-somente-leitura.sql source/supabase/auditoria-somente-leitura.sql
+--- source_before_final/supabase/auditoria-somente-leitura.sql	1970-01-01 00:00:00.000000000 +0000
++++ source/supabase/auditoria-somente-leitura.sql	2026-06-24 06:26:42.876545449 +0000
+@@ -0,0 +1,94 @@
++-- AUDITORIA SOMENTE LEITURA — TEM NO ENTORNO SUL
++-- Não altera dados, tabelas, funções ou policies.
++
++-- 1. Tabelas, estimativa de linhas e RLS
++select
++    n.nspname as esquema,
++    c.relname as tabela,
++    c.reltuples::bigint as linhas_estimadas,
++    c.relrowsecurity as rls_ativo
++from pg_class c
++join pg_namespace n on n.oid = c.relnamespace
++where n.nspname = 'public'
++  and c.relkind in ('r', 'p')
++order by c.relname;
++
++-- 2. Colunas e tipos
++select table_name, ordinal_position, column_name, data_type, udt_name,
++       is_nullable, column_default
++from information_schema.columns
++where table_schema = 'public'
++order by table_name, ordinal_position;
++
++-- 3. Chaves primárias, únicas e estrangeiras
++select tc.table_name, tc.constraint_name, tc.constraint_type,
++       kcu.column_name, ccu.table_name as tabela_referenciada,
++       ccu.column_name as coluna_referenciada
++from information_schema.table_constraints tc
++left join information_schema.key_column_usage kcu
++  on tc.constraint_name = kcu.constraint_name
++ and tc.constraint_schema = kcu.constraint_schema
++left join information_schema.constraint_column_usage ccu
++  on tc.constraint_name = ccu.constraint_name
++ and tc.constraint_schema = ccu.constraint_schema
++where tc.table_schema = 'public'
++order by tc.table_name, tc.constraint_type, tc.constraint_name, kcu.ordinal_position;
++
++-- 4. Policies RLS
++select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
++from pg_policies
++where schemaname = 'public'
++order by tablename, policyname;
++
++-- 5. Funções públicas e configuração de segurança
++select n.nspname as esquema, p.proname as funcao,
++       pg_get_function_identity_arguments(p.oid) as argumentos,
++       p.prosecdef as security_definer, p.proconfig as configuracoes,
++       pg_get_function_result(p.oid) as retorno
++from pg_proc p
++join pg_namespace n on n.oid = p.pronamespace
++where n.nspname = 'public'
++order by p.proname, argumentos;
++
++-- 6. Views
++select schemaname, viewname, definition
++from pg_views
++where schemaname = 'public'
++order by viewname;
++
++-- 7. Triggers
++select event_object_table as tabela, trigger_name, action_timing,
++       event_manipulation, action_statement
++from information_schema.triggers
++where trigger_schema = 'public'
++order by event_object_table, trigger_name;
++
++-- 8. Índices
++select schemaname, tablename, indexname, indexdef
++from pg_indexes
++where schemaname = 'public'
++order by tablename, indexname;
++
++-- 9. Roles oficiais
++select * from public.roles order by id;
++
++-- 10. Usuários e roles
++select ur.id, ur.usuario_id, ur.role_id, r.nome as role_nome, ur.created_at
++from public.usuarios_roles ur
++left join public.roles r on r.id = ur.role_id
++order by ur.usuario_id, ur.role_id;
++
++-- 11. Possíveis e-mails duplicados
++select lower(trim(email)) as email_normalizado, count(*) as total
++from public.usuarios
++where email is not null and trim(email) <> ''
++group by lower(trim(email))
++having count(*) > 1
++order by total desc, email_normalizado;
++
++-- 12. Usuários sem role
++select u.id, u.nome, u.email, u.status, u.created_at
++from public.usuarios u
++left join public.usuarios_roles ur on ur.usuario_id = u.id
++where ur.usuario_id is null
++order by u.created_at;
+diff -ruN source_before_final/termos.html source/termos.html
+--- source_before_final/termos.html	2026-06-24 06:19:51.000000000 +0000
++++ source/termos.html	2026-06-24 06:27:37.854116606 +0000
+@@ -1,14 +1,6 @@
+ <!DOCTYPE html>
+ <html lang="pt-BR">
+ <head>
+-    <!-- Google tag (gtag.js) -->
+-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5FS77TS1WV"></script>
+-    <script>
+-      window.dataLayer = window.dataLayer || [];
+-      function gtag(){dataLayer.push(arguments);}
+-      gtag('js', new Date());
+-      gtag('config', 'G-5FS77TS1WV');
+-    </script>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Termos de Uso | Tem no Entorno Sul</title>
+@@ -40,5 +32,9 @@
+ <h2>12. Alterações</h2><p>Estes termos podem ser atualizados para refletir mudanças legais, operacionais ou de funcionalidades.</p>
+ </article></section></main>
+ <div id="publicFooter"></div>
+-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-config.js"></script><script src="components/seo.js"></script><script src="components/analytics.js"></script><script src="components/public-header.js"></script><script src="components/ad-slot.js"></script><script src="components/public-footer.js"></script><script src="components/cookies.js"></script>
++<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase-config.js"></script><script src="components/seo.js"></script>
++<script src="components/public-header.js"></script><script src="components/ad-slot.js"></script><script src="components/public-footer.js"></script>
++
++    <script src="components/cookies.js"></script>
++    <script src="components/analytics.js"></script>
+ </body></html>
+diff -ruN source_before_final/vercel.json source/vercel.json
+--- source_before_final/vercel.json	2026-06-24 06:19:51.000000000 +0000
++++ source/vercel.json	2026-06-24 06:27:37.833071790 +0000
+@@ -74,8 +74,33 @@
+         {
+           "key": "Permissions-Policy",
+           "value": "camera=(), microphone=(), geolocation=(self)"
++        },
++        {
++          "key": "Strict-Transport-Security",
++          "value": "max-age=31536000; includeSubDomains"
++        },
++        {
++          "key": "X-Permitted-Cross-Domain-Policies",
++          "value": "none"
++        },
++        {
++          "key": "Cross-Origin-Opener-Policy",
++          "value": "same-origin-allow-popups"
++        }
++      ]
++    },
++    {
++      "source": "/admin/(.*)",
++      "headers": [
++        {
++          "key": "Cache-Control",
++          "value": "no-store, max-age=0"
++        },
++        {
++          "key": "X-Robots-Tag",
++          "value": "noindex, nofollow"
+         }
+       ]
+     }
+   ]
+-}
+\ No newline at end of file
++}

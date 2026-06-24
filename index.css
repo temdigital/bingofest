@@ -1,0 +1,337 @@
+:root {
+    --verde: #216c39;
+    --verde-dark: #184f2b;
+    --amarelo: #f9d22d;
+    --laranja: #fba309;
+    --fundo: #fffcf7;
+    --texto: #1e293b;
+    --muted: #64748b;
+    --borda: #e2e8f0;
+    --branco: #ffffff;
+    --sombra: 0 22px 60px rgba(15, 23, 42, .10);
+}
+
+/* HOME — CORREÇÃO SEM SOBRESCREVER O STYLE.CSS */
+
+#publicacoesGrid,
+#empresasGrid,
+#eventosGrid,
+#comunidadeHome {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+    align-items: stretch;
+}
+
+#comunidadeHome {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+#publicacoesGrid:empty,
+#empresasGrid:empty,
+#eventosGrid:empty,
+#comunidadeHome:empty {
+    display: none;
+}
+
+/* CARDS GERADOS PELO INDEX.JS */
+
+.home-card {
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow, 0 4px 12px rgba(0, 0, 0, 0.08));
+    transition: var(--transition, all .3s ease);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.home-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover, 0 8px 20px rgba(0, 0, 0, 0.12));
+}
+
+.home-card-media {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    background: rgba(33, 107, 57, .06);
+}
+
+.home-card-media img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.home-card-placeholder {
+    width: 100%;
+    height: 220px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(33, 107, 57, .10), rgba(250, 160, 17, .12));
+    color: var(--color-primary, #216b39);
+    font-size: 2.5rem;
+}
+
+.home-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.home-card-kicker {
+    display: inline-block;
+    align-self: flex-start;
+    background-color: rgba(33, 107, 57, .10);
+    color: var(--color-primary, #216b39);
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: .8rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.home-card-body h3 {
+    font-size: 1.2rem;
+    margin: 0 0 12px;
+    color: var(--color-primary, #216b39);
+    line-height: 1.35;
+}
+
+.home-card-body h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.home-card-body h3 a:hover {
+    color: var(--color-accent, #faa011);
+}
+
+.home-card-body p {
+    color: #666;
+    margin: 0 0 20px;
+    font-size: .95rem;
+    line-height: 1.5;
+}
+
+.home-card-link {
+    margin-top: auto;
+    color: var(--color-primary, #216b39);
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.home-card-link:hover {
+    color: var(--color-accent, #faa011);
+}
+
+/* BOTÕES VER TODAS */
+
+.section-action {
+    width: 100%;
+    margin-top: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.section-action .btn,
+.section-action .btn-accent {
+    min-width: 240px;
+    justify-content: center;
+}
+
+/* LOADING */
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--color-primary, #216b39);
+}
+
+.loading-spinner i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.loading-spinner p {
+    margin: 0;
+}
+
+/* COMUNIDADE NA HOME */
+
+.home-community-section {
+    padding: 60px 0;
+    background: #fffefd;
+}
+
+.home-community-section .section-header,
+.home-community-section .section-title,
+.home-community-section p {
+    text-align: center;
+}
+
+.home-community-section .section-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: var(--color-primary, #216b39);
+    font-weight: 700;
+}
+
+.home-community-cta,
+.home-community-section .section-action {
+    margin-top: 30px;
+    text-align: center;
+}
+
+/* PUBLICIDADE */
+
+.ad-section {
+    padding: 34px 0;
+    background: #fffefd;
+}
+
+.ad-section.ad-muted {
+    background: #f9f9f9;
+}
+
+.ad-container {
+    width: min(970px, calc(100% - 32px));
+    margin: 0 auto;
+    text-align: center;
+}
+
+.ad-label {
+    margin-bottom: 8px;
+    color: #999;
+    font-size: .75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.ad-banner {
+    min-height: 250px;
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    background: #fafafa;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.ad-banner img,
+.ad-banner picture,
+.ad-banner iframe {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+/* BARRA FINANCEIRA */
+
+.market-bar {
+    background: #1f2937;
+    color: #ffffff;
+    padding: 12px 0;
+    overflow: hidden;
+}
+
+.market-container {
+    width: min(1200px, calc(100% - 32px));
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    font-size: .9rem;
+}
+
+.market-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+.market-item strong {
+    color: var(--color-highlight, #f8d22d);
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 1100px) {
+    #publicacoesGrid,
+    #empresasGrid,
+    #eventosGrid,
+    #comunidadeHome {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    #publicacoesGrid,
+    #empresasGrid,
+    #eventosGrid,
+    #comunidadeHome {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .home-card-media img,
+    .home-card-placeholder {
+        height: 200px;
+    }
+
+    .section-action .btn,
+    .section-action .btn-accent {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .ad-banner {
+        min-height: 100px;
+    }
+
+    .market-container {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .market-container::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .home-card-body {
+        padding: 18px;
+    }
+
+    .home-card-body h3 {
+        font-size: 1.1rem;
+    }
+
+    .home-card-media img,
+    .home-card-placeholder {
+        height: 190px;
+    }
+}

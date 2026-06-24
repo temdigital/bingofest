@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar Remoção | Tem no Entorno Sul</title>
+    <meta name="description" content="Solicite remoção de cadastro, perfil ou publicação no Tem no Entorno Sul.">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#216c39">
+    <link rel="icon" href="assets/logo-tem-no-entorno-sul.png">
+    <link rel="stylesheet" href="css/public-layout.css">
+    <link rel="stylesheet" href="css/remocao.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+<div id="publicHeader"></div>
+
+<main class="public-page removal-page">
+    <section class="container removal-hero">
+        <span class="public-kicker"><i class="fas fa-user-shield"></i> LGPD e atendimento</span>
+        <h1>Solicitar remoção de perfil ou publicação</h1>
+        <p>
+            Use este formulário para pedir remoção, revisão ou correção de cadastro, perfil público,
+            comentário, publicação, evento ou informação exibida no portal. O pedido será enviado ao Painel Administrativo
+            e respondido por e-mail ou WhatsApp.
+        </p>
+    </section>
+
+    <section class="container removal-grid">
+        <article class="removal-card">
+            <h2>Formulário de solicitação</h2>
+            <p class="removal-muted">E-mail e WhatsApp são obrigatórios para que a equipe consiga responder.</p>
+
+            <form id="removalForm" class="removal-form" novalidate>
+                <div class="removal-field">
+                    <label for="tipo">Tipo de solicitação</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="perfil">Remover perfil / cadastro</option>
+                        <option value="publicacao">Remover publicação ou conteúdo</option>
+                        <option value="outro">Outro pedido relacionado a dados</option>
+                    </select>
+                </div>
+
+                <div class="removal-field">
+                    <label for="nome">Nome completo</label>
+                    <input id="nome" name="nome" type="text" autocomplete="name" required>
+                </div>
+
+                <div class="removal-field two">
+                    <div>
+                        <label for="email">E-mail</label>
+                        <input id="email" name="email" type="email" autocomplete="email" required>
+                    </div>
+                    <div>
+                        <label for="whatsapp">WhatsApp</label>
+                        <input id="whatsapp" name="whatsapp" type="tel" inputmode="numeric" autocomplete="tel" placeholder="(61) 99999-9999" required>
+                    </div>
+                </div>
+
+                <div class="removal-field">
+                    <label for="link">Link do perfil, publicação ou conteúdo</label>
+                    <input id="link" name="link" type="url" placeholder="https://www.temnoentornosul.com.br/...">
+                    <small>Obrigatório quando o pedido for sobre uma publicação, evento, parceiro, comentário ou perfil público específico.</small>
+                </div>
+
+                <div class="removal-field">
+                    <label for="motivo">Motivo do pedido</label>
+                    <select id="motivo" name="motivo" required>
+                        <option value="">Selecione</option>
+                        <option value="Quero remover meu perfil ou cadastro">Quero remover meu perfil ou cadastro</option>
+                        <option value="Quero remover uma publicação ou conteúdo">Quero remover uma publicação ou conteúdo</option>
+                        <option value="Meus dados estão incorretos">Meus dados estão incorretos</option>
+                        <option value="Não autorizei a publicação">Não autorizei a publicação</option>
+                        <option value="Outro motivo">Outro motivo</option>
+                    </select>
+                </div>
+
+                <div class="removal-field">
+                    <label for="detalhes">Detalhes</label>
+                    <textarea id="detalhes" name="detalhes" rows="7" placeholder="Explique o pedido com clareza para facilitar a análise."></textarea>
+                </div>
+
+                <div id="removalMessage" class="removal-message" aria-live="polite"></div>
+
+                <button id="removalSubmit" class="removal-submit" type="submit">
+                    <i class="fas fa-paper-plane"></i>
+                    Enviar solicitação
+                </button>
+            </form>
+        </article>
+
+        <aside class="removal-info">
+            <h2>Como funciona</h2>
+            <ol>
+                <li>Você envia o pedido com e-mail e WhatsApp.</li>
+                <li>O sistema registra uma numeração de atendimento.</li>
+                <li>O Admin analisa os pedidos pelo método PEPS: primeiro que entra, primeiro que sai.</li>
+                <li>A resposta pode ser enviada por WhatsApp ou e-mail.</li>
+            </ol>
+            <p>
+                O portal poderá solicitar confirmação de identidade para evitar exclusões indevidas.
+                Algumas informações podem ser mantidas quando houver obrigação legal, prevenção de fraude,
+                auditoria ou exercício regular de direitos.
+            </p>
+        </aside>
+    </section>
+</main>
+
+<div id="publicFooter"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="components/public-header.js"></script>
+<script src="components/ad-slot.js"></script>
+<script src="components/public-footer.js"></script>
+<script src="js/remocao.js"></script>
+
+    <script src="components/cookies.js"></script>
+    <script src="components/analytics.js"></script>
+</body>
+</html>

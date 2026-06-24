@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Comunidade | Tem no Entorno Sul</title>
+    <link rel="canonical" href="https://www.temnoentornosul.com.br/comunidade.html">
+
+    <meta
+        name="description"
+        content="Mural da comunidade Tem no Entorno Sul para interação entre moradores, comerciantes e usuários da região."
+    >
+
+    <meta name="robots" content="index,follow">
+
+    <meta name="theme-color" content="#216c39">
+
+    <link rel="icon" href="assets/logo-tem-no-entorno-sul.png">
+
+    <link rel="stylesheet" href="css/public-layout.css">
+    <link rel="stylesheet" href="css/comunidade.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+<div id="publicHeader"></div>
+
+<ad-slot posicao="topo"></ad-slot>
+
+<main>
+
+    <section class="community-hero">
+        <div class="container">
+            <span class="community-kicker">
+                <i class="fas fa-users"></i>
+                Comunidade
+            </span>
+
+            <h1>Mural da Comunidade</h1>
+
+            <p>
+                Um espaço para moradores, comerciantes e participantes do Entorno Sul
+                conversarem sobre cidades, bairros, eventos, serviços, oportunidades e assuntos da região.
+            </p>
+        </div>
+    </section>
+
+    <section class="community-section">
+        <div class="container community-layout">
+
+            <aside class="community-sidebar">
+                <div class="community-panel">
+                    <h2>Filtros</h2>
+
+                    <button class="community-filter active" data-filter="todos">
+                        <i class="fas fa-layer-group"></i>
+                        Todos
+                    </button>
+
+                    <button class="community-filter" data-filter="cidade">
+                        <i class="fas fa-city"></i>
+                        Cidade
+                    </button>
+
+                    <button class="community-filter" data-filter="comercio">
+                        <i class="fas fa-store"></i>
+                        Comércio
+                    </button>
+
+                    <button class="community-filter" data-filter="eventos">
+                        <i class="fas fa-calendar-days"></i>
+                        Eventos
+                    </button>
+
+                    <button class="community-filter" data-filter="servicos">
+                        <i class="fas fa-screwdriver-wrench"></i>
+                        Serviços
+                    </button>
+
+                    <button class="community-filter" data-filter="alertas">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        Alertas
+                    </button>
+
+                    <button class="community-filter" data-filter="duvidas">
+                        <i class="fas fa-circle-question"></i>
+                        Dúvidas
+                    </button>
+
+                    <button class="community-filter" data-filter="oportunidades">
+                        <i class="fas fa-briefcase"></i>
+                        Oportunidades
+                    </button>
+                </div>
+
+                <div class="community-panel">
+                    <h2>Regras rápidas</h2>
+
+                    <ul class="community-rules">
+                        <li>Respeite outros usuários.</li>
+                        <li>Evite ofensas, spam ou fake news.</li>
+                        <li>Publique assuntos úteis para a região.</li>
+                        <li>Comentários podem ser moderados.</li>
+                    </ul>
+                </div>
+            </aside>
+
+            <section class="community-main">
+
+                <div id="communityComposer">
+                    <div class="community-loading-card">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                </div>
+
+                <div id="communityStats"></div>
+
+                <div id="communityFeed">
+                    <div class="community-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <h2>Carregando comunidade...</h2>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+    </section>
+
+</main>
+
+<ad-slot posicao="comunidade_feed"></ad-slot>
+
+<div id="publicFooter"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/supabase-config.js"></script>
+
+<script src="components/seo.js"></script>
+<script src="components/public-header.js"></script>
+<script src="components/ad-slot.js"></script>
+<script src="components/public-footer.js"></script>
+
+<script src="js/comunidade.js"></script>
+
+    <script src="components/cookies.js"></script>
+    <script src="components/analytics.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /pages/
+
+Sitemap: https://www.temnoentornosul.com.br/sitemap.xml

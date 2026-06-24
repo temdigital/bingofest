@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Criar Conta | Tem no Entorno Sul</title>
+
+    <meta name="description" content="Crie sua conta no Tem no Entorno Sul.">
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="theme-color" content="#216c39">
+
+    <link rel="icon" href="assets/logo-tem-no-entorno-sul.png">
+    <link rel="stylesheet" href="css/public-layout.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div id="publicHeader"></div>
+
+<ad-slot posicao="topo"></ad-slot>
+
+<main class="auth-page">
+    <section class="auth-card">
+        <div class="auth-brand">
+            <img src="assets/logo-tem-no-entorno-sul.png" onerror="this.src='https://i.imgur.com/9eZarki.png'" alt="Tem no Entorno Sul">
+
+            <h1>Criar conta</h1>
+            <p>Cadastre-se para participar da comunidade, favoritar conteúdos e acumular pontos.</p>
+        </div>
+
+        <form id="cadastroForm" class="auth-form">
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input id="nome" type="text" autocomplete="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input id="email" type="email" autocomplete="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="whatsapp">WhatsApp</label>
+                <input id="whatsapp" type="tel" inputmode="numeric" autocomplete="tel" placeholder="(61) 99999-9999" maxlength="15" required>
+                <small class="password-rules">Informe um WhatsApp brasileiro com DDD. Usaremos esse número somente para recursos do portal, como mensagens de aniversário.</small>
+            </div>
+
+            <div class="form-group">
+                <label>Data de nascimento</label>
+                <div class="birth-select-grid" aria-label="Data de nascimento">
+                    <select id="birthDay" required>
+                        <option value="">Dia</option>
+                    </select>
+
+                    <select id="birthMonth" required>
+                        <option value="">Mês</option>
+                        <option value="01">Janeiro</option>
+                        <option value="02">Fevereiro</option>
+                        <option value="03">Março</option>
+                        <option value="04">Abril</option>
+                        <option value="05">Maio</option>
+                        <option value="06">Junho</option>
+                        <option value="07">Julho</option>
+                        <option value="08">Agosto</option>
+                        <option value="09">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+
+                    <input id="birthYear" type="number" min="1900" max="2100" inputmode="numeric" autocomplete="bday-year" placeholder="Ano" required>
+                </div>
+                <input id="dataNascimento" type="hidden" autocomplete="bday" required>
+                <small class="password-rules">Informe dia, mês e digite o ano com 4 números. Essa data será usada para a mensagem de aniversário no seu perfil.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input id="password" type="password" autocomplete="new-password" minlength="6" required>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirmar senha</label>
+                <input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required>
+            </div>
+
+            <button id="submitBtn" class="auth-btn" type="submit">
+                <i class="fas fa-user-plus"></i>
+                Criar conta
+            </button>
+
+            <div id="authMessage" class="auth-message"></div>
+        </form>
+
+        <div class="auth-links">
+            <a href="login.html">Já tenho conta</a>
+            <a href="recuperar-senha.html">Esqueci minha senha</a>
+        </div>
+    </section>
+</main>
+
+<div id="publicFooter"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="components/public-header.js"></script>
+<script src="components/ad-slot.js"></script>
+<script src="components/public-footer.js"></script>
+<script src="js/auth-cadastro.js"></script>
+
+
+    <script src="components/cookies.js"></script>
+    <script src="components/analytics.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Meus Favoritos | Tem no Entorno Sul</title>
+    <link rel="canonical" href="https://www.temnoentornosul.com.br/favoritos.html">
+
+    <meta
+        name="description"
+        content="Veja suas publicações, eventos, parceiros e colunistas favoritos."
+    >
+
+    <meta name="robots" content="noindex,nofollow">
+
+    <meta name="theme-color" content="#216c39">
+
+    <link rel="icon" href="assets/logo-tem-no-entorno-sul.png">
+
+    <link rel="stylesheet" href="css/public-layout.css">
+    <link rel="stylesheet" href="css/favoritos.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <div id="publicHeader"></div>
+
+<ad-slot posicao="topo"></ad-slot>
+
+    <main>
+
+        <section class="favorites-hero">
+
+            <div class="container">
+
+                <div class="favorites-kicker">
+                    <i class="fas fa-bookmark"></i>
+                    Área do Usuário
+                </div>
+
+                <h1>
+                    Meus Favoritos
+                </h1>
+
+                <p>
+                    Tudo o que você salvou para ler,
+                    visitar ou acompanhar depois.
+                </p>
+
+            </div>
+
+        </section>
+
+        <section class="favorites-section">
+
+            <div class="container">
+
+                <div class="favorites-filters">
+
+                    <button
+                        class="favorite-filter active"
+                        data-filter="todos"
+                    >
+                        Todos
+                    </button>
+
+                    <button
+                        class="favorite-filter"
+                        data-filter="publicacao"
+                    >
+                        Publicações
+                    </button>
+
+                    <button
+                        class="favorite-filter"
+                        data-filter="evento"
+                    >
+                        Eventos
+                    </button>
+
+                    <button
+                        class="favorite-filter"
+                        data-filter="parceiro"
+                    >
+                        Parceiros
+                    </button>
+
+                    <button
+                        class="favorite-filter"
+                        data-filter="colunista"
+                    >
+                        Colunistas
+                    </button>
+
+                </div>
+
+                <div id="favoritosStats">
+
+                    <div class="favorites-stats-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+
+                </div>
+
+                <div id="favoritosGrid">
+
+                    <div class="favorites-loading">
+
+                        <i class="fas fa-spinner fa-spin"></i>
+
+                        <h2>
+                            Carregando favoritos...
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <div id="publicFooter"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="js/supabase-config.js"></script>
+
+    <script src="components/seo.js"></script>
+<script src="components/public-header.js"></script>
+    <script src="components/ad-slot.js"></script>
+<script src="components/public-footer.js"></script>
+
+    <script src="js/favoritos.js"></script>
+
+    <script src="components/cookies.js"></script>
+    <script src="components/analytics.js"></script>
+</body>
+
+</html>

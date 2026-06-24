@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ranking da Comunidade | Tem no Entorno Sul</title>
+    <link rel="canonical" href="https://www.temnoentornosul.com.br/ranking.html">
+
+    <meta
+        name="description"
+        content="Ranking de usuários da comunidade Tem no Entorno Sul."
+    >
+
+    <meta name="robots" content="index,follow">
+
+    <meta name="theme-color" content="#216c39">
+
+    <link rel="icon" href="assets/logo-tem-no-entorno-sul.png">
+
+    <link rel="stylesheet" href="css/public-layout.css">
+    <link rel="stylesheet" href="css/ranking.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+<div id="publicHeader"></div>
+
+<ad-slot posicao="topo"></ad-slot>
+
+<main>
+
+    <section class="ranking-hero">
+
+        <div class="container">
+
+            <div class="ranking-kicker">
+                <i class="fas fa-trophy"></i>
+                Comunidade
+            </div>
+
+            <h1>
+                Ranking da Comunidade
+            </h1>
+
+            <p>
+                Usuários que mais participam, curtem, favoritam, compartilham
+                e ajudam a movimentar o Tem no Entorno Sul.
+            </p>
+
+        </div>
+
+    </section>
+
+    <section class="ranking-section">
+
+        <div class="container">
+
+            <div id="rankingStats">
+
+                <div class="ranking-loading-card">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+
+            </div>
+
+            <div id="rankingRoot">
+
+                <div class="ranking-loading">
+
+                    <i class="fas fa-spinner fa-spin"></i>
+
+                    <h2>
+                        Carregando ranking...
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<div id="publicFooter"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/supabase-config.js"></script>
+
+<script src="components/seo.js"></script>
+<script src="components/public-header.js"></script>
+<script src="components/ad-slot.js"></script>
+<script src="components/public-footer.js"></script>
+
+<script src="js/ranking.js"></script>
+
+    <script src="components/cookies.js"></script>
+    <script src="components/analytics.js"></script>
+</body>
+
+</html>

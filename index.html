@@ -1,54 +1,185 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#094fb0">
-  <meta name="description" content="Bingo Fest — bingo online de 75 bolas, multijogador e em tempo real.">
-  <title>Bingo Fest — Família REI</title>
-  <link rel="icon" href="assets/images/rei-oficial.png" type="image/png">
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"
+    >
+
+    <title>Tem no Entorno Sul - Sua região em um só lugar</title>
+
+    <link rel="canonical" href="https://www.temnoentornosul.com.br/">
+
+    <meta name="description" content="Notícias, eventos e informações relevantes do Entorno Sul. Conectamos você ao comércio local e à cultura regional.">
+    <meta name="keywords" content="notícias, eventos, comércio local, Entorno Sul, Valparaíso de Goiás, Novo Gama, Cidade Ocidental, Luziânia">
+    <meta name="author" content="Tem no Entorno Sul">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#216c39">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.temnoentornosul.com.br/">
+    <meta property="og:title" content="Tem no Entorno Sul - Sua região em um só lugar">
+    <meta property="og:description" content="Notícias, eventos, empresas e informações relevantes do Entorno Sul.">
+    <meta property="og:image" content="https://www.temnoentornosul.com.br/assets/logo-tem-no-entorno-sul.png">
+    <meta property="og:image:secure_url" content="https://www.temnoentornosul.com.br/assets/logo-tem-no-entorno-sul.png">
+    <meta property="og:image:alt" content="Tem no Entorno Sul">
+    <meta property="og:site_name" content="Tem no Entorno Sul">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tem no Entorno Sul - Sua região em um só lugar">
+    <meta name="twitter:description" content="Notícias, eventos, empresas e informações relevantes do Entorno Sul.">
+    <meta name="twitter:image" content="https://www.temnoentornosul.com.br/assets/logo-tem-no-entorno-sul.png">
+
+    <link rel="icon" type="image/png" href="assets/logo-tem-no-entorno-sul.png">
+    <link rel="apple-touch-icon" href="assets/logo-tem-no-entorno-sul.png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="css/public-layout.css">
+    <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
-  <div id="app-shell">
-    <header class="app-header" id="app-header" hidden>
-      <a class="brand-link" href="#/lobby" aria-label="Bingo Fest — início">
-        <img src="assets/images/rei-oficial.png" alt="Família REI Personalizações" width="54" height="48">
-        <strong style="margin-left:10px;font-size:1.08rem">Bingo Fest</strong>
-      </a>
-      <div class="header-user">
-        <span id="header-user-name"></span>
-        <button id="logout-button" class="button button-ghost button-small" type="button">Sair</button>
-      </div>
-    </header>
 
-    <main id="app" tabindex="-1" aria-live="polite">
-      <section class="screen screen-loading">
-        <div class="spinner" aria-hidden="true"></div>
-        <p>Carregando o Bingo Fest…</p>
-      </section>
-    </main>
+<div id="publicHeader"></div>
 
-    <nav class="bottom-nav" id="bottom-nav" hidden aria-label="Navegação principal">
-      <a href="#/lobby" data-nav="lobby">Rodadas</a>
-      <a href="#/history" data-nav="history">Histórico</a>
-      <a href="#/admin" data-nav="admin" id="admin-nav-link" hidden>Admin</a>
-    </nav>
-  </div>
+<ad-slot posicao="topo"></ad-slot>
 
-  <div id="toast-region" class="toast-region" aria-live="assertive" aria-atomic="true"></div>
-  <div id="modal-root"></div>
+<main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
-  <script src="js/config.js" defer></script>
-  <script src="js/utils.js" defer></script>
-  <script src="js/auth.js" defer></script>
-  <script src="js/lobby.js" defer></script>
-  <script src="js/waiting-room.js" defer></script>
-  <script src="js/game.js" defer></script>
-  <script src="js/history.js" defer></script>
-  <script src="js/admin.js" defer></script>
-  <script src="js/app.js" defer></script>
+    <section class="hero">
+        <div class="container hero-content">
+            <h1 class="hero-title">O que acontece no Entorno Sul</h1>
+            <p class="hero-subtitle">Notícias, eventos, empresas e informações relevantes da nossa região</p>
+        </div>
+    </section>
+
+    <section class="section section-light">
+        <div class="container">
+            <h2 class="section-title">Publicações Recentes</h2>
+
+            <div id="publicacoesLoading" class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando publicações...</p>
+            </div>
+
+            <div id="publicacoesGrid" class="cards-grid"></div>
+
+            <div class="section-action">
+                <a href="./publicacoes.html" class="btn btn-accent">Ver Todas as Publicações</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="ad-section ad-muted" aria-label="Publicidade entre publicações e recursos">
+        <ad-slot posicao="entre_cards"></ad-slot>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Como Funciona</h2>
+
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3>Para Usuários</h3>
+                    <p>Encontre comércios e serviços próximos de você, participe de eventos locais e receba ofertas exclusivas.</p>
+                </div>
+
+                <div class="feature-card fade-in delay-1">
+                    <div class="feature-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3>Para Comércios</h3>
+                    <p>Divulgue seu negócio, promova eventos e ofertas, conecte-se com clientes locais.</p>
+                </div>
+
+                <div class="feature-card fade-in delay-2">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Para a Comunidade</h3>
+                    <p>Fortalecimento da economia regional, geração de empregos e valorização da identidade local.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-light">
+        <div class="container">
+            <h2 class="section-title">Empresas Parceiras</h2>
+
+            <div id="empresasLoading" class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando empresas...</p>
+            </div>
+
+            <div id="empresasGrid" class="cards-grid"></div>
+
+            <div class="section-action">
+                <a href="./parceiros.html" class="btn btn-accent">Ver Todas as Empresas</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="ad-section" aria-label="Publicidade no meio da home">
+        <ad-slot posicao="home_meio"></ad-slot>
+    </section>
+
+    <section class="mission">
+        <div class="container">
+            <div class="mission-content">
+                <h2 class="section-title">Nossa Missão</h2>
+
+                <div class="mission-text">
+                    <p>Comércio e serviços locais. Cultura também é negócio! Valorizamos o crescimento da nossa região e o fortalecimento da economia nacional. Através de informações atualizadas e soluções inovadoras, estamos comprometidos em impulsionar o desenvolvimento dos comércios locais. Os pequenos negócios são a espinha dorsal da nossa cidade, gerando empregos e promovendo prosperidade. Junte-se a nós nesse movimento em prol do progresso.</p>
+
+                    <div class="highlight">
+                        Apoiar os comércios locais é fundamental para o desenvolvimento da região e para a economia do país.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-colored">
+        <div class="container">
+            <h2 class="section-title">Eventos em Destaque</h2>
+
+            <div id="eventosLoading" class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando eventos...</p>
+            </div>
+
+            <div id="eventosGrid" class="cards-grid"></div>
+
+            <div class="section-action">
+                <a href="./eventos.html" class="btn btn-accent">Ver Todos os Eventos</a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<div id="publicFooter"></div>
+
+<script src="js/supabase-config.js"></script>
+<script src="components/public-header.js"></script>
+<script src="components/ad-slot.js"></script>
+<script src="components/public-footer.js"></script>
+<script src="index.js"></script>
+
+
+    <script src="components/cookies.js"></script>
+    <script src="components/analytics.js"></script>
 </body>
 </html>

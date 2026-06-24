@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Eventos | Tem no Entorno Sul</title>
+    <link rel="canonical" href="https://www.temnoentornosul.com.br/eventos.html">
+
+    <meta name="description" content="Eventos do Entorno Sul. Encontre eventos por categoria, cidade e localização.">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#216c39">
+
+    <link rel="icon" href="assets/logo-tem-no-entorno-sul.png">
+
+    <link rel="stylesheet" href="css/public-layout.css">
+    <link rel="stylesheet" href="css/eventos.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div id="publicHeader"></div>
+
+<ad-slot posicao="topo"></ad-slot>
+
+<main>
+    <section class="hero">
+        <div class="container">
+            <span class="kicker">
+                <i class="fas fa-calendar-alt"></i>
+                Eventos
+            </span>
+
+            <h1>Eventos no Entorno Sul</h1>
+            <p>Encontre eventos culturais, esportivos, comunitários e regionais perto de você.</p>
+        </div>
+    </section>
+
+    <section class="container filters-section">
+        <div class="filters-card">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input
+                    id="searchInput"
+                    type="search"
+                    placeholder="Buscar por nome, cidade, bairro, categoria ou realizador..."
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="filter-group">
+                <label for="categoriaFilter">Categoria</label>
+                <select id="categoriaFilter">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="cidadeFilter">Cidade</label>
+                <select id="cidadeFilter">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="ordemFilter">Ordenação</label>
+                <select id="ordemFilter">
+                    <option value="proximos">Próximos eventos</option>
+                    <option value="destaques">Destaques primeiro</option>
+                    <option value="gratuitos">Gratuitos primeiro</option>
+                    <option value="titulo">Nome A-Z</option>
+                </select>
+            </div>
+
+            <button id="usarLocalizacaoBtn" class="geo-btn" type="button">
+                <i class="fas fa-location-crosshairs"></i>
+                Usar minha localização
+            </button>
+
+            <button id="clearFiltersBtn" class="clear-btn" type="button">
+                <i class="fas fa-eraser"></i>
+                Limpar
+            </button>
+        </div>
+
+        <div id="resultsInfo" class="results-info"></div>
+    </section>
+
+    <section class="container map-section">
+        <div id="mapBox" class="map-box">
+            <div class="map-empty">
+                <i class="fas fa-map-location-dot"></i>
+                <p>Selecione um evento com localização para abrir no mapa.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="container events-section">
+        <div id="eventosRoot" class="events-grid">
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando eventos...</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<ad-slot posicao="eventos_feed"></ad-slot>
+
+<div id="publicFooter"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="components/seo.js"></script>
+<script src="components/public-header.js"></script>
+<script src="components/ad-slot.js"></script>
+<script src="components/public-footer.js"></script>
+<script src="js/eventos.js"></script>
+
+    <script src="components/cookies.js"></script>
+    <script src="components/analytics.js"></script>
+</body>
+</html>
