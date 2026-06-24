@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#094fb0">
+  <meta name="description" content="Bingo Fest — bingo online de 75 bolas, multijogador e em tempo real.">
+  <title>Bingo Fest</title>
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app-shell">
+    <header class="app-header" id="app-header" hidden>
+      <a class="brand-link" href="#/lobby" aria-label="Bingo Fest — início">
+        <img src="assets/images/logo.svg" alt="Bingo Fest" width="132" height="48">
+      </a>
+      <div class="header-user">
+        <span id="header-user-name"></span>
+        <button id="logout-button" class="button button-ghost button-small" type="button">Sair</button>
+      </div>
+    </header>
+
+    <main id="app" tabindex="-1" aria-live="polite">
+      <section class="screen screen-loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Carregando o Bingo Fest…</p>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" id="bottom-nav" hidden aria-label="Navegação principal">
+      <a href="#/lobby" data-nav="lobby">Rodadas</a>
+      <a href="#/history" data-nav="history">Histórico</a>
+      <a href="#/admin" data-nav="admin" id="admin-nav-link" hidden>Admin</a>
+    </nav>
+  </div>
+
+  <div id="toast-region" class="toast-region" aria-live="assertive" aria-atomic="true"></div>
+  <div id="modal-root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/utils.js" defer></script>
+  <script src="js/auth.js" defer></script>
+  <script src="js/lobby.js" defer></script>
+  <script src="js/waiting-room.js" defer></script>
+  <script src="js/game.js" defer></script>
+  <script src="js/history.js" defer></script>
+  <script src="js/admin.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
