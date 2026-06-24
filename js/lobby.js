@@ -1,7 +1,11 @@
 (() => {
   "use strict";
   const BF = window.BingoFest;
-  const { escapeHtml, formatDate, statusLabel, prizeLabel, navigate, toast, setBusy, celebrate, renderBingoCard } = BF.utils;
+  const {
+    escapeHtml, formatDate, statusLabel, prizeLabel, wonPrizesLabel,
+    navigate, toast, setBusy, celebrate, renderBingoCard,
+    getPrizeCard, getPrizeMarks, normalizeObject
+  } = BF.utils;
 
   function roundCard(round) {
     const action = round.status === "waiting"
@@ -36,12 +40,12 @@
 
     app.querySelectorAll(".participate-button").forEach(button => {
       button.addEventListener("click", async () => {
-        setBusy(button, true, "Gerando cartela…");
+        setBusy(button, true, "Gerando 4 cartelas…");
         try {
           const { data: card, error: joinError } = await BF.supabase.rpc("join_round", { p_round_id: button.dataset.roundId });
           if (joinError) throw joinError;
           sessionStorage.setItem("bingoFestAudioEnabled", "true");
-          toast(`Cartela ${card.card_code} criada.`, "success");
+          toast(`Cartelas ${card.card_code} preparadas.`, "success");
           navigate(`/waiting-room?round=${button.dataset.roundId}`);
         } catch (error) {
           toast(error.message || "Não foi possível participar.", "error");
@@ -49,6 +53,26 @@
         }
       });
     });
+  }
+
+  function prizeDrawnNumbers(round, prizeNumber) {
+    const prize = (round?.prizes || []).find(item => Number(item.prize_number) === Number(prizeNumber));
+    if (prize?.drawn_numbers) return prize.drawn_numbers;
+    return Number(round?.current_prize) === Number(prizeNumber) ? (round?.drawn_numbers || []) : [];
+  }
+
+  function renderResultCards(card, round) {
+    const prizeCards = normalizeObject(card.prize_cards);
+    const prizeNumbers = Object.keys(prizeCards).length ? [1, 2, 3, 4] : [1];
+    return prizeNumbers.map(prizeNumber => `<section class="result-prize-card">
+      <h4>${prizeLabel(prizeNumber)}</h4>
+      ${renderBingoCard(getPrizeCard(card, prizeNumber), prizeDrawnNumbers(round, prizeNumber), {
+        code: `${card.card_code}-P${prizeNumber}`,
+        manual: true,
+        markedNumbers: getPrizeMarks(card, prizeNumber),
+        locked: true
+      })}
+    </section>`).join("");
   }
 
   async function renderResult(roundId) {
@@ -67,11 +91,21 @@
         <div class="round-card-header"><h2>Ganhadores</h2><span class="status-badge status-${round?.status}">${statusLabel(round?.status)}</span></div>
         <div class="winner-list">${winners.length ? winners.map(winner => `<div class="winner-item${winner.user_id === BF.state.user.id ? " mine" : ""}">
           <strong>${escapeHtml(winner.name)}${winner.user_id === BF.state.user.id ? " — você" : ""}</strong>
-          <span>${prizeLabel(winner.won_prize)}</span><br><small>${escapeHtml(winner.card_code)}</small>
+          <span>${prizeLabel(winner.prize_number || winner.won_prize)}</span><br><small>${escapeHtml(winner.card_code)}</small>
         </div>`).join("") : '<div class="empty-state">Esta rodada não registrou ganhadores.</div>'}</div>
       </div>
       <div class="section-title"><h2>Cartelas da rodada</h2><span>${cards.length}</span></div>
-      <div class="card-grid">${cards.map(card => `<article class="card"><h3>${escapeHtml(card.name)}</h3><p class="meta">${escapeHtml(card.card_code)} · ${card.won_prize ? prizeLabel(card.won_prize) : "Não premiada"}</p>${renderBingoCard(card.numbers, [], {})}</article>`).join("") || '<div class="empty-state">Nenhuma cartela registrada.</div>'}</div>
+      <div class="card-grid">${cards.map(card => {
+        const wonPrizes = card.won_prizes?.length ? card.won_prizes : (card.won_prize ? [card.won_prize] : []);
+        return `<article class="card">
+          <h3>${escapeHtml(card.name)}</h3>
+          <p class="meta">${escapeHtml(card.card_code)} · ${wonPrizesLabel(wonPrizes)}</p>
+          <details class="result-card-details">
+            <summary>Ver as quatro cartelas</summary>
+            ${renderResultCards(card, round)}
+          </details>
+        </article>`;
+      }).join("") || '<div class="empty-state">Nenhuma cartela registrada.</div>'}</div>
       <div class="button-row" style="margin-top:18px"><a class="button" href="#/lobby">Voltar ao Lobby</a></div>
     </section>`;
   }
