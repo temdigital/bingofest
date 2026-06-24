@@ -2,61 +2,73 @@
 
 Bingo online de 75 bolas, multijogador, mobile-first e em tempo real, construído com HTML, CSS e JavaScript Vanilla, Supabase e GitHub Pages.
 
-## Estado da instalação
+## Estado do projeto
 
-O código da aplicação, o banco, as políticas RLS, as RPCs, o Realtime e o fluxo de publicação estão incluídos. Restam apenas as credenciais do seu Supabase e a criação manual da conta administrativa.
+**Projeto finalizado e instalado.**
 
-## 1. Configurar o Supabase
+- Frontend publicado pela branch `main`.
+- Supabase configurado com autenticação, banco, RLS, RPCs e Realtime.
+- Conta administrativa criada e promovida para a role `admin`.
+- GitHub Pages configurado com GitHub Actions.
+- Marca oficial da Família REI aplicada na abertura, no cabeçalho e no espaço do coringa.
+- Mensagem de boa sorte assinada como **Família REI 👑**.
 
-1. Crie um projeto no Supabase.
-2. Abra **SQL Editor** e execute integralmente `supabase/schema.sql`.
-3. Em **Authentication > Providers > Email**, mantenha apenas e-mail/senha. Para o MVP, a confirmação de e-mail pode ser desativada.
-4. Em **Authentication > Users**, crie o usuário administrador usando o e-mail definido no documento do projeto. Não armazene a senha no repositório.
-5. Execute no SQL Editor:
+## Identidade visual
 
-```sql
-update public.profiles
-set name = 'Eros', role = 'admin'
-where id = (
-  select id from auth.users
-  where email = 'eroscupido.ia@gmail.com'
-);
+O arquivo oficial utilizado pelo sistema é:
+
+```text
+assets/images/logo.svg
 ```
 
-6. Em **Project Settings > API**, copie a URL do projeto e a chave pública `anon`.
-7. Edite `js/config.js`:
+A imagem foi otimizada para carregamento no navegador e é utilizada em:
 
-```js
-supabaseUrl: "https://SEU-PROJETO.supabase.co",
-supabaseAnonKey: "SUA_CHAVE_ANON"
+- tela inicial;
+- cabeçalho autenticado;
+- apresentação da Família REI;
+- centro das cartelas como coringa automático;
+- ícone da página.
+
+## Supabase
+
+O banco completo está em:
+
+```text
+supabase/schema.sql
 ```
 
-> Nunca coloque a chave `service_role` no frontend.
+Ele contém:
 
-## 2. Publicar no GitHub Pages
+- tabelas `profiles`, `rounds` e `cards`;
+- índices;
+- políticas de Row Level Security;
+- integração com Supabase Realtime;
+- geração segura de cartelas no servidor;
+- sorteio seguro de números;
+- validação de quinas e cartela cheia;
+- reconhecimento de empates;
+- cancelamento, avanço de prêmio e encerramento;
+- consulta protegida de resultados e administração.
 
-O workflow `.github/workflows/pages.yml` publica a branch `main`.
+A configuração pública do projeto fica em `js/config.js`. Nunca inclua uma chave administrativa no frontend.
 
-No GitHub, abra **Settings > Pages > Build and deployment** e selecione **GitHub Actions**. Após o próximo push, o endereço aparecerá no workflow de Pages.
+## Publicação
 
-## 3. Imagens oficiais
+O workflow abaixo publica automaticamente a branch `main` no GitHub Pages:
 
-A instalação inclui imagens vetoriais provisórias para que o sistema funcione imediatamente:
-
-- `assets/images/logo.svg`
-- `assets/images/coringa.svg`
-- `assets/images/familia-rei.svg`
-
-Quando os arquivos oficiais forem fornecidos, substitua-os mantendo os mesmos nomes ou atualize as referências no código.
+```text
+.github/workflows/pages.yml
+```
 
 ## Segurança aplicada
 
-- RLS ativo em `profiles`, `rounds` e `cards`.
-- Cartelas são geradas no servidor pela RPC `join_round`, impedindo escolha/manipulação de números pelo navegador.
-- Sorteios e empates são resolvidos atomicamente pela RPC `draw_number`.
-- Operações administrativas validam a role no banco.
-- Cada usuário vê apenas a própria cartela durante a partida.
-- As cartelas dos demais participantes são reveladas somente em resultados concluídos ou cancelados.
+- RLS ativo nas tabelas públicas.
+- Cartelas geradas pela RPC `join_round`, sem escolha de números pelo navegador.
+- Sorteios e empates resolvidos pela RPC `draw_number`.
+- Operações administrativas validam a role diretamente no banco.
+- Cada jogador visualiza apenas sua própria cartela durante a partida.
+- Cartelas de outros participantes são reveladas apenas na tela de resultado.
+- A senha administrativa não é armazenada no repositório.
 
 ## Estrutura
 
@@ -72,15 +84,20 @@ js/game.js
 js/admin.js
 js/history.js
 js/utils.js
-assets/images/
+assets/images/logo.svg
 supabase/schema.sql
 .github/workflows/pages.yml
 ```
 
-## Teste recomendado
+## Teste operacional recomendado
 
-1. Abra uma sessão como admin e duas sessões anônimas como jogadores.
-2. Crie a rodada e faça os dois jogadores participarem.
+1. Abra uma sessão como administrador e duas sessões privadas como jogadores.
+2. Crie uma rodada e gere uma cartela para cada jogador.
 3. Inicie a rodada.
-4. Teste sorteio manual, automático, troca de prêmio, empate, cancelamento e encerramento forçado.
-5. Confirme histórico, privacidade das cartelas e resultado final.
+4. Teste o modo manual e o automático.
+5. Confirme as três quinas, a cartela cheia, um empate, o cancelamento e o encerramento forçado.
+6. Verifique o histórico, a privacidade das cartelas e o resultado final.
+
+---
+
+**Família REI 👑**
