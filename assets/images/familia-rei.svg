@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" role="img" aria-labelledby="title desc">
+  <title id="title">Família REI</title><desc id="desc">Imagem provisória de boa sorte da Família REI</desc>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dcecff"/><stop offset="1" stop-color="#fff9b5"/></linearGradient></defs>
+  <rect width="760" height="400" rx="36" fill="url(#bg)"/>
+  <path d="M290 98h180l-25 72H315z" fill="#ffeb34" stroke="#094fb0" stroke-width="8"/><path d="M320 98l30-48 30 48 30-48 30 48" fill="#ffeb34" stroke="#094fb0" stroke-width="8" stroke-linejoin="round"/>
+  <g fill="#094fb0"><circle cx="270" cy="230" r="55"/><circle cx="380" cy="205" r="67"/><circle cx="500" cy="230" r="55"/></g>
+  <g fill="#5de345" stroke="#fff" stroke-width="8"><path d="M185 370c8-75 40-112 85-112s77 37 85 112z"/><path d="M275 370c9-93 46-139 105-139s96 46 105 139z"/><path d="M415 370c8-75 40-112 85-112s77 37 85 112z"/></g>
+  <text x="380" y="385" text-anchor="middle" font-family="Arial,sans-serif" font-size="30" font-weight="900" fill="#094fb0">FAMÍLIA REI</text>
+</svg>
