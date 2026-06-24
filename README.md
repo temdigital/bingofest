@@ -1,80 +1,56 @@
 # Bingo Fest
 
-Bingo online de 75 bolas, multijogador, mobile-first e em tempo real, construído com HTML, CSS e JavaScript Vanilla, Supabase e GitHub Pages.
+Bingo online de 75 bolas, multijogador, mobile-first e em tempo real, construído com HTML, CSS, JavaScript Vanilla, Supabase e GitHub Pages.
 
 ## Estado do projeto
 
-**Projeto finalizado e instalado.**
+O frontend da versão 2 está instalado na branch `main`.
 
-- Frontend publicado pela branch `main`.
-- Supabase configurado com autenticação, banco, RLS, RPCs e Realtime.
-- Conta administrativa criada e promovida para a role `admin`.
-- GitHub Pages configurado com GitHub Actions.
-- Marca oficial da Família REI aplicada na abertura, no cabeçalho e no espaço do coringa.
-- Mensagem de boa sorte assinada como **Família REI 👑**.
+A versão atual acrescenta:
+
+- marcação manual dos números pelo jogador;
+- validação da marcação no servidor;
+- uma cartela diferente para cada um dos quatro prêmios;
+- possibilidade de o mesmo jogador ganhar mais de um prêmio;
+- suporte a empates durante a pausa antes do próximo sorteio;
+- histórico com as quatro cartelas e as marcações realizadas;
+- resultados completos por prêmio.
+
+## Atualização obrigatória do Supabase
+
+Depois do banco inicial, execute integralmente no SQL Editor:
+
+```text
+supabase/migration-manual-marking.sql
+```
+
+Essa migração adiciona `prize_cards`, `marked_numbers` e `won_prizes` em `cards`, gera quatro cartelas no servidor, cria a RPC `mark_card_number` e registra a vitória somente depois da marcação manual.
+
+## Funcionamento da partida
+
+1. O jogador entra na rodada e recebe quatro cartelas geradas no servidor.
+2. A primeira cartela é apresentada para a 1ª Quina.
+3. Quando uma bola é sorteada, o número correspondente fica destacado.
+4. O jogador precisa clicar no número para marcá-lo.
+5. A vitória usa somente os números realmente marcados.
+6. No próximo prêmio, os números sorteados são reiniciados e uma nova cartela é liberada.
+7. O processo se repete até a Cartela Cheia.
 
 ## Identidade visual
 
-O arquivo oficial utilizado pelo sistema é:
+A marca oficial está em:
 
 ```text
-assets/images/logo.svg
+assets/images/rei-oficial.png
 ```
 
-A imagem foi otimizada para carregamento no navegador e é utilizada em:
-
-- tela inicial;
-- cabeçalho autenticado;
-- apresentação da Família REI;
-- centro das cartelas como coringa automático;
-- ícone da página.
-
-## Supabase
-
-O banco completo está em:
-
-```text
-supabase/schema.sql
-```
-
-Ele contém:
-
-- tabelas `profiles`, `rounds` e `cards`;
-- índices;
-- políticas de Row Level Security;
-- integração com Supabase Realtime;
-- geração segura de cartelas no servidor;
-- sorteio seguro de números;
-- validação de quinas e cartela cheia;
-- reconhecimento de empates;
-- cancelamento, avanço de prêmio e encerramento;
-- consulta protegida de resultados e administração.
-
-A configuração pública do projeto fica em `js/config.js`. Nunca inclua uma chave administrativa no frontend.
-
-## Publicação
-
-O workflow abaixo publica automaticamente a branch `main` no GitHub Pages:
-
-```text
-.github/workflows/pages.yml
-```
-
-## Segurança aplicada
-
-- RLS ativo nas tabelas públicas.
-- Cartelas geradas pela RPC `join_round`, sem escolha de números pelo navegador.
-- Sorteios e empates resolvidos pela RPC `draw_number`.
-- Operações administrativas validam a role diretamente no banco.
-- Cada jogador visualiza apenas sua própria cartela durante a partida.
-- Cartelas de outros participantes são reveladas apenas na tela de resultado.
-- A senha administrativa não é armazenada no repositório.
-
-## Estrutura
+## Arquivos principais
 
 ```text
 index.html
 css/style.css
+css/fixes.css
+css/manual-game.css
 js/config.js
 js/app.js
 js/auth.js
@@ -84,19 +60,29 @@ js/game.js
 js/admin.js
 js/history.js
 js/utils.js
-assets/images/logo.svg
+assets/images/rei-oficial.png
 supabase/schema.sql
+supabase/migration-manual-marking.sql
 .github/workflows/pages.yml
 ```
 
-## Teste operacional recomendado
+## Segurança
 
-1. Abra uma sessão como administrador e duas sessões privadas como jogadores.
-2. Crie uma rodada e gere uma cartela para cada jogador.
-3. Inicie a rodada.
-4. Teste o modo manual e o automático.
-5. Confirme as três quinas, a cartela cheia, um empate, o cancelamento e o encerramento forçado.
-6. Verifique o histórico, a privacidade das cartelas e o resultado final.
+- RLS permanece ativo.
+- As cartelas são geradas no PostgreSQL.
+- A RPC confirma autenticação, propriedade da cartela, rodada ativa, número sorteado e presença do número na cartela atual.
+- A vitória depende das marcações persistidas no banco.
+- Operações administrativas continuam protegidas pela role `admin`.
+
+## Verificação recomendada
+
+1. Execute `supabase/migration-manual-marking.sql`.
+2. Crie uma rodada nova.
+3. Entre com pelo menos dois jogadores.
+4. Confirme que a marcação só ocorre por clique.
+5. Confirme que um número não sorteado não pode ser marcado.
+6. Avance para verificar a troca completa da cartela.
+7. Repita até a Cartela Cheia e confira histórico, resultados e empates.
 
 ---
 
