@@ -6,7 +6,7 @@
 
   function renderHome() {
     document.getElementById("app").innerHTML = `<section class="hero"><div class="hero-card">
-      <img class="hero-logo" src="assets/images/logo.svg" alt="Família REI Personalizações">
+      <img class="hero-logo" src="assets/images/rei-oficial.png" alt="Família REI Personalizações">
       <h1 style="margin:14px 0 4px;font-size:clamp(2.2rem,10vw,4.5rem);line-height:1;color:var(--yellow);text-shadow:0 5px 16px rgba(0,0,0,.28)">Bingo Fest</h1>
       <p style="margin:0 0 20px;font-weight:800">Bingo de 75 bolas em tempo real</p>
       <div class="hero-family">
