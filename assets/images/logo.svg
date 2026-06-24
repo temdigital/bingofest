@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" role="img" aria-labelledby="title desc">
+  <title id="title">Bingo Fest</title><desc id="desc">Logo provisória do Bingo Fest</desc>
+  <defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffeb34"/><stop offset="1" stop-color="#5de345"/></linearGradient></defs>
+  <rect width="640" height="220" rx="44" fill="#073b84"/>
+  <g transform="translate(32 32)"><circle cx="78" cy="78" r="72" fill="url(#g)" stroke="#fff" stroke-width="8"/><text x="78" y="102" text-anchor="middle" font-family="Arial,sans-serif" font-size="76" font-weight="900" fill="#094fb0">75</text></g>
+  <text x="190" y="104" font-family="Arial,sans-serif" font-size="78" font-weight="900" fill="#fff">BINGO</text>
+  <text x="194" y="174" font-family="Arial,sans-serif" font-size="62" font-weight="900" fill="#ffeb34" letter-spacing="7">FEST</text>
+</svg>
