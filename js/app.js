@@ -6,14 +6,20 @@
 
   function renderHome() {
     document.getElementById("app").innerHTML = `<section class="hero"><div class="hero-card">
-      <img class="hero-logo" src="assets/images/logo.svg" alt="Bingo Fest">
-      <div class="hero-family"><img src="assets/images/familia-rei.svg" alt="Família REI"><p>A Família REI deseja boa sorte a todos!</p></div>
+      <img class="hero-logo" src="assets/images/logo.svg" alt="Família REI Personalizações">
+      <h1 style="margin:14px 0 4px;font-size:clamp(2.2rem,10vw,4.5rem);line-height:1;color:var(--yellow);text-shadow:0 5px 16px rgba(0,0,0,.28)">Bingo Fest</h1>
+      <p style="margin:0 0 20px;font-weight:800">Bingo de 75 bolas em tempo real</p>
+      <div class="hero-family">
+        <img src="assets/images/logo.svg" alt="Marca da Família REI Personalizações">
+        <p>A Família REI deseja boa sorte a todos!</p>
+        <span style="display:block;margin-top:10px;font-family:Georgia,serif;font-size:1.1rem;font-style:italic;font-weight:800;color:var(--yellow)">Família REI <span aria-hidden="true">&#128081;</span></span>
+      </div>
       <div class="hero-actions"><a class="button button-yellow" href="#/login">Entrar</a><a class="button button-primary" href="#/register">Cadastrar</a></div>
     </div></section>`;
   }
 
   function renderConfigWarning() {
-    document.getElementById("app").innerHTML = `<section class="screen"><div class="card config-warning"><h1>Configuração necessária</h1><p>O código foi instalado, mas precisa das credenciais públicas do projeto Supabase.</p><code>js/config.js</code><p>Preencha <strong>supabaseUrl</strong> e <strong>supabaseAnonKey</strong>. Nunca coloque a chave <em>service_role</em> no navegador.</p><a class="button" href="#/">Voltar</a></div></section>`;
+    document.getElementById("app").innerHTML = `<section class="screen"><div class="card config-warning"><h1>Configuração necessária</h1><p>O código foi instalado, mas precisa das credenciais públicas do projeto Supabase.</p><code>js/config.js</code><p>Preencha a URL e a chave pública do projeto. Nunca coloque uma chave administrativa no navegador.</p><a class="button" href="#/">Voltar</a></div></section>`;
   }
 
   function renderAuth(mode) {
