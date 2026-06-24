@@ -1,0 +1,123 @@
+/* Bingo Fest v2 — interação manual da cartela */
+.manual-play-help {
+  margin: 14px 0 0;
+  padding: 13px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  border: 1px solid #c8d8ee;
+  border-radius: 14px;
+  background: #eef5ff;
+  color: #153b70;
+  text-align: center;
+}
+
+.manual-play-help strong {
+  color: var(--blue);
+}
+
+.card-soft {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.card-soft strong,
+.card-soft span {
+  display: block;
+}
+
+.admin-player-note {
+  margin: 0 0 12px;
+}
+
+.bingo-cell.interactive {
+  appearance: none;
+  width: 100%;
+  border: 2px solid #d5e0ef;
+  padding: 0;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.bingo-cell.interactive:hover {
+  border-color: var(--blue);
+}
+
+.bingo-cell.interactive:focus-visible {
+  outline: 4px solid rgba(9, 79, 176, .22);
+  outline-offset: 2px;
+}
+
+.bingo-cell.available {
+  border-color: #e0b400;
+  background: #fff8b8;
+  color: #4a3900;
+  box-shadow: 0 0 0 3px rgba(255, 235, 52, .28);
+  animation: available-number 1.15s ease-in-out infinite;
+}
+
+.bingo-cell.marking {
+  pointer-events: none;
+  animation: marking-number .55s linear infinite;
+}
+
+.bingo-cell.interactive:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.bingo-cell.marked {
+  animation: none;
+}
+
+.manual-mark-count {
+  margin: 14px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.history-prize-card,
+.result-prize-card {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.history-prize-card h4,
+.result-prize-card h4 {
+  margin: 0 0 12px;
+  text-align: center;
+  color: var(--blue);
+}
+
+.result-card-details summary {
+  padding: 10px 0;
+  color: var(--blue);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+@keyframes available-number {
+  50% {
+    transform: scale(.94);
+    box-shadow: 0 0 0 7px rgba(255, 235, 52, 0);
+  }
+}
+
+@keyframes marking-number {
+  50% {
+    filter: brightness(.82);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bingo-cell.available,
+  .bingo-cell.marking {
+    animation: none;
+  }
+}
