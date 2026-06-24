@@ -53,6 +53,11 @@
     return prizeLabels[Number(prize)] || "Não premiada";
   }
 
+  function wonPrizesLabel(prizes = []) {
+    const list = Array.isArray(prizes) ? prizes.map(Number).filter(Boolean) : [];
+    return list.length ? list.map(prizeLabel).join(" · ") : "Não premiada";
+  }
+
   function toast(message, type = "info", duration = 4200) {
     const region = document.getElementById("toast-region");
     if (!region) return;
@@ -107,10 +112,34 @@
     return [];
   }
 
-  function hasWin(numbers, drawnNumbers, prizeNumber) {
+  function normalizeObject(value) {
+    if (value && typeof value === "object" && !Array.isArray(value)) return value;
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+    return {};
+  }
+
+  function getPrizeCard(card, prizeNumber) {
+    const prizeCards = normalizeObject(card?.prize_cards);
+    return normalizeMatrix(prizeCards[String(prizeNumber)] || card?.numbers || []);
+  }
+
+  function getPrizeMarks(card, prizeNumber) {
+    const markedNumbers = normalizeObject(card?.marked_numbers);
+    const values = markedNumbers[String(prizeNumber)];
+    return Array.isArray(values) ? values.map(Number).filter(Number.isFinite) : [];
+  }
+
+  function hasWin(numbers, markedNumbers, prizeNumber) {
     const matrix = normalizeMatrix(numbers);
-    const drawn = new Set((drawnNumbers || []).map(Number));
-    const hit = (value) => value === "CURINGA" || drawn.has(Number(value));
+    const marked = new Set((markedNumbers || []).map(Number));
+    const hit = (value) => value === "CURINGA" || marked.has(Number(value));
     if (Number(prizeNumber) === 4) return matrix.flat().every(hit);
     const lines = [];
     for (let row = 0; row < 5; row += 1) lines.push(matrix[row]);
@@ -123,10 +152,30 @@
   function renderBingoCard(numbers, drawnNumbers = [], options = {}) {
     const matrix = normalizeMatrix(numbers);
     const drawn = new Set((drawnNumbers || []).map(Number));
+    const marked = new Set((options.markedNumbers || []).map(Number));
+    const manual = options.manual === true;
+    const locked = options.locked === true;
+
     const cells = matrix.flatMap(row => row).map(value => {
       const joker = value === "CURINGA";
-      const marked = joker || drawn.has(Number(value));
-      return `<div class="bingo-cell${joker ? " joker" : ""}${marked ? " marked" : ""}" ${joker ? 'aria-label="Coringa, marcado automaticamente"' : `aria-label="Número ${Number(value)}${marked ? ", sorteado" : ""}"`}>
+      const number = Number(value);
+      const isDrawn = !joker && drawn.has(number);
+      const isMarked = joker || (manual ? marked.has(number) : isDrawn);
+      const isAvailable = manual && isDrawn && !isMarked && !locked;
+      const className = [
+        "bingo-cell",
+        joker ? "joker" : "",
+        isMarked ? "marked" : "",
+        isAvailable ? "available" : "",
+        manual && !joker ? "interactive" : ""
+      ].filter(Boolean).join(" ");
+
+      if (manual && !joker) {
+        const state = isMarked ? "marcado" : (isDrawn ? "sorteado, clique para marcar" : "ainda não sorteado");
+        return `<button type="button" class="${className}" data-card-number="${number}" data-drawn="${String(isDrawn)}" ${locked ? "disabled" : ""} aria-label="Número ${number}, ${state}">${number}</button>`;
+      }
+
+      return `<div class="${className}" ${joker ? 'aria-label="Coringa, marcado automaticamente"' : `aria-label="Número ${number}${isMarked ? ", marcado" : ""}"`}>
         ${joker ? '<img src="assets/images/rei-oficial.png" alt="Família REI — Coringa">' : escapeHtml(value)}
       </div>`;
     }).join("");
@@ -185,8 +234,8 @@
   }
 
   BF.utils = {
-    escapeHtml, parseRoute, navigate, formatDate, statusLabel, prizeLabel, toast, setBusy,
-    generateCard, normalizeMatrix, hasWin, renderBingoCard, renderDrawnNumbers,
-    speakNumber, celebrate, showModal, unionDrawn
+    escapeHtml, parseRoute, navigate, formatDate, statusLabel, prizeLabel, wonPrizesLabel, toast, setBusy,
+    generateCard, normalizeMatrix, normalizeObject, getPrizeCard, getPrizeMarks, hasWin, renderBingoCard,
+    renderDrawnNumbers, speakNumber, celebrate, showModal, unionDrawn
   };
 })();
