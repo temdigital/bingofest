@@ -1,0 +1,9 @@
+{
+  "name": "bingo-fest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bingo de 75 bolas multijogador em tempo real",
+  "scripts": {
+    "check": "node --check js/config.js && node --check js/utils.js && node --check js/auth.js && node --check js/lobby.js && node --check js/waiting-room.js && node --check js/game.js && node --check js/history.js && node --check js/admin.js && node --check js/app.js"
+  }
+}
