@@ -127,7 +127,7 @@
       const joker = value === "CURINGA";
       const marked = joker || drawn.has(Number(value));
       return `<div class="bingo-cell${joker ? " joker" : ""}${marked ? " marked" : ""}" ${joker ? 'aria-label="Coringa, marcado automaticamente"' : `aria-label="Número ${Number(value)}${marked ? ", sorteado" : ""}"`}>
-        ${joker ? '<img src="assets/images/coringa.svg" alt="Coringa">' : escapeHtml(value)}
+        ${joker ? '<img src="assets/images/logo.svg" alt="Família REI — Coringa">' : escapeHtml(value)}
       </div>`;
     }).join("");
 
