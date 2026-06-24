@@ -1,4 +1,4 @@
-name: Publicar no GitHub Pages
+name: Validar e publicar no GitHub Pages
 
 on:
   push:
@@ -23,12 +23,23 @@ jobs:
     steps:
       - name: Baixar repositório
         uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validar JavaScript
+        run: npm run check
+
       - name: Configurar Pages
         uses: actions/configure-pages@v5
+
       - name: Empacotar site
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
