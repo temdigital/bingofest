@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="title">
+  <title id="title">Coringa</title>
+  <defs><radialGradient id="bg"><stop stop-color="#fff"/><stop offset="1" stop-color="#ffeb34"/></radialGradient></defs>
+  <circle cx="100" cy="100" r="94" fill="url(#bg)" stroke="#094fb0" stroke-width="10"/>
+  <path d="M44 82c22-47 49-30 56-3 8-27 35-44 56 3-17 3-28 17-29 40H73c-1-23-12-37-29-40z" fill="#5de345" stroke="#094fb0" stroke-width="7"/>
+  <circle cx="75" cy="71" r="9" fill="#ffeb34"/><circle cx="125" cy="71" r="9" fill="#ffeb34"/>
+  <path d="M73 128c17 15 37 15 54 0" fill="none" stroke="#094fb0" stroke-width="8" stroke-linecap="round"/>
+  <text x="100" y="172" text-anchor="middle" font-family="Arial,sans-serif" font-size="26" font-weight="900" fill="#094fb0">CORINGA</text>
+</svg>
