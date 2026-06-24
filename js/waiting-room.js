@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const BF = window.BingoFest;
-  const { escapeHtml, renderBingoCard, navigate, toast } = BF.utils;
+  const { escapeHtml, renderBingoCard, getPrizeCard, navigate, toast } = BF.utils;
   let channel = null;
 
   function cleanup() {
@@ -26,7 +26,11 @@
       <div class="page-heading"><h1>Sala de Espera</h1><p>${escapeHtml(round.name)}</p></div>
       <div class="card">
         <div class="waiting-message"><span class="pulse"></span>Aguardando o administrador iniciar a rodada…</div>
-        ${renderBingoCard(card.numbers, [], { code: card.card_code })}
+        ${renderBingoCard(getPrizeCard(card, 1), [], { code: `${card.card_code}-P1` })}
+      </div>
+      <div class="card-soft" style="margin-top:16px">
+        <strong>Como jogar</strong>
+        <p class="meta">Quando uma bola for sorteada, clique no mesmo número da sua cartela para marcá-lo. A cada novo prêmio, você receberá uma cartela com números diferentes.</p>
       </div>
       <p class="meta" style="text-align:center;margin-top:15px">Mantenha esta tela aberta. A entrada no jogo será automática.</p>
     </section>`;
